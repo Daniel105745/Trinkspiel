@@ -18,6 +18,8 @@ export type Room = {
   created_at: string;
   current_card_id: number | null;
   current_card_text: string | null;
+  current_game: string | null;
+  current_meta: Record<string, string> | null;
   host_id: string;
 };
 
