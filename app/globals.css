@@ -10,4 +10,6 @@ body {
   font-family: var(--font-nunito), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* iPhone Safe Area */
+  padding-bottom: env(safe-area-inset-bottom);
 }

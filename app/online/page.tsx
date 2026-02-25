@@ -108,7 +108,7 @@ export default function OnlineLobby() {
     >
       <div className="flex flex-col gap-4">
         {/* Name Badge */}
-        <div className="flex items-center justify-between rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3">
+        <div className="flex items-center justify-between rounded-2xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-900/60 text-sm font-black text-sky-300">
               {name.trim()[0]?.toUpperCase()}
@@ -128,7 +128,7 @@ export default function OnlineLobby() {
         )}
 
         {/* Raum erstellen */}
-        <div className={`rounded-3xl border transition-all ${mode === "create" ? "border-sky-700/60 bg-sky-950/20" : "border-white/[0.08] bg-white/[0.04]"}`}>
+        <div className={`rounded-3xl border backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all ${mode === "create" ? "border-sky-700/60 bg-sky-950/30" : "border-white/[0.12] bg-white/[0.06]"}`}>
           <button onClick={() => { setMode(mode === "create" ? "idle" : "create"); setFehler(null); }} className="flex w-full items-center gap-4 p-5">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-cyan-300">
               <Plus className="h-6 w-6 text-white" />
@@ -141,7 +141,7 @@ export default function OnlineLobby() {
           {mode === "create" && (
             <div className="border-t border-white/[0.06] p-5 pt-4">
               <p className="mb-4 text-sm font-semibold text-zinc-400">Ein 4-stelliger Code wird generiert — teile ihn mit deinen Freunden.</p>
-              <button onClick={raumErstellen} disabled={isLoading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-400 to-cyan-300 py-4 text-lg font-black text-white transition-all active:scale-95 disabled:opacity-60">
+              <button onClick={raumErstellen} disabled={isLoading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-400 to-cyan-300 py-4 text-lg font-black text-white shadow-[0_0_20px_rgba(14,165,233,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95 disabled:opacity-60">
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Globe className="h-5 w-5" />}
                 Raum erstellen
               </button>
@@ -150,7 +150,7 @@ export default function OnlineLobby() {
         </div>
 
         {/* Raum beitreten */}
-        <div className={`rounded-3xl border transition-all ${mode === "join" ? "border-white/20 bg-white/[0.06]" : "border-white/[0.08] bg-white/[0.04]"}`}>
+        <div className={`rounded-3xl border backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all ${mode === "join" ? "border-white/[0.20] bg-white/[0.08]" : "border-white/[0.12] bg-white/[0.06]"}`}>
           <button onClick={() => { setMode(mode === "join" ? "idle" : "join"); setFehler(null); }} className="flex w-full items-center gap-4 p-5">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.08]">
               <LogIn className="h-6 w-6 text-zinc-300" />

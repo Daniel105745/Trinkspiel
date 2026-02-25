@@ -104,7 +104,7 @@ export default function Buzzer() {
           ) : (
             <div className="flex w-full max-w-sm flex-col gap-4">
               {/* Aufgaben-Karte */}
-              <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.04]">
+              <div className="relative overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)]">
                 <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-orange-500 to-red-500" />
                 <div className="p-6 pb-8 pt-7">
                   <span className="inline-block rounded-xl bg-red-900/50 px-3 py-1 text-xs font-black uppercase tracking-widest text-red-300">
@@ -144,7 +144,7 @@ export default function Buzzer() {
                 </div>
               )}
               {gameState === "pressed" && result && reactionMs !== null && (
-                <div className="rounded-3xl border border-white/[0.08] bg-white/[0.04] p-6 text-center">
+                <div className="rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_32px_rgba(0,0,0,0.4)] p-6 text-center">
                   <p className="text-5xl font-black tabular-nums text-white mb-2">
                     {(reactionMs / 1000).toFixed(2)}s
                   </p>
@@ -160,7 +160,7 @@ export default function Buzzer() {
           {gameState === "revealed" && (
             <button
               onClick={drücken}
-              className="flex w-full items-center justify-center gap-3 rounded-3xl bg-gradient-to-r from-orange-500 to-red-500 py-7 text-2xl font-black text-white shadow-2xl shadow-red-900/50 transition-all active:scale-95 animate-pulse"
+              className="flex w-full items-center justify-center gap-3 rounded-3xl bg-gradient-to-r from-orange-500 to-red-500 py-7 text-2xl font-black text-white shadow-[0_0_30px_rgba(239,68,68,0.5),0_4px_20px_rgba(0,0,0,0.3)] transition-all active:scale-95 animate-pulse"
             >
               <Zap className="h-7 w-7" />
               BUZZ!
@@ -169,7 +169,7 @@ export default function Buzzer() {
           {gameState === "idle" && card && (
             <button
               onClick={starteRunde}
-              className="flex w-full items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-orange-500 to-red-500 py-5 text-xl font-black text-white shadow-lg shadow-red-900/40 transition-all active:scale-95"
+              className="flex w-full items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-orange-500 to-red-500 py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95"
             >
               <Zap className="h-5 w-5" />
               Runde starten
@@ -178,7 +178,7 @@ export default function Buzzer() {
           {gameState === "waiting" && (
             <button
               onClick={abbrechen}
-              className="flex w-full items-center justify-center gap-2 rounded-3xl border border-white/10 bg-white/[0.05] py-5 text-lg font-black text-zinc-300 transition-all active:scale-95"
+              className="flex w-full items-center justify-center gap-2 rounded-3xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] py-5 text-lg font-black text-zinc-300 transition-all active:scale-95"
             >
               Abbrechen
             </button>
@@ -186,7 +186,7 @@ export default function Buzzer() {
           {gameState === "pressed" && (
             <button
               onClick={starteRunde}
-              className="flex w-full items-center justify-center gap-2 rounded-3xl border border-white/10 bg-white/[0.05] py-5 text-lg font-black text-zinc-200 transition-all active:scale-95"
+              className="flex w-full items-center justify-center gap-2 rounded-3xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] py-5 text-lg font-black text-zinc-200 transition-all active:scale-95"
             >
               <RotateCcw className="h-5 w-5" />
               Noch mal
@@ -195,7 +195,7 @@ export default function Buzzer() {
           <button
             onClick={nächsteKarte}
             disabled={gameState === "waiting" || gameState === "revealed"}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/[0.06] bg-white/[0.03] py-3.5 text-sm font-black text-zinc-400 transition-all active:scale-95 disabled:opacity-30"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] py-3.5 text-sm font-black text-zinc-400 transition-all active:scale-95 disabled:opacity-30"
           >
             <RefreshCw className="h-4 w-4" />
             Neue Karte

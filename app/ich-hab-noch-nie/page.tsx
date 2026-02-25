@@ -12,25 +12,22 @@ export default function IchHabNochNie() {
   const [loading, setLoading] = useState(true);
   const [schonGetan, setSchonGetan] = useState(false);
   const [trinkenFlash, setTrinkenFlash] = useState(false);
-
   const [formOffen, setFormOffen] = useState(false);
   const [eingabe, setEingabe] = useState("");
   const [sendingForm, setSendingForm] = useState(false);
   const [formErfolg, setFormErfolg] = useState(false);
 
   useEffect(() => {
-    async function load() {
-      const { data } = await supabase
-        .from("ich_hab_noch_nie")
-        .select("id, text, schon_getan_count, noch_nie_count");
-      if (data && data.length > 0) {
-        const shuffled = [...data].sort(() => Math.random() - 0.5) as IchHabNochNie[];
-        setCards(shuffled);
-        setIndex(0);
-      }
-      setLoading(false);
-    }
-    load();
+    supabase
+      .from("ich_hab_noch_nie")
+      .select("id, text, schon_getan_count, noch_nie_count")
+      .then(({ data }) => {
+        if (data?.length) {
+          setCards([...data].sort(() => Math.random() - 0.5) as IchHabNochNie[]);
+          setIndex(0);
+        }
+        setLoading(false);
+      });
   }, []);
 
   function nächsteKarte() {
@@ -70,35 +67,39 @@ export default function IchHabNochNie() {
     onSwipedLeft: nächsteKarte,
     onSwipedRight: nächsteKarte,
     preventScrollOnSwipe: true,
-    trackMouse: false,
   });
 
   const card = index >= 0 ? cards[index] : null;
-  const counter = cards.length > 0 ? `${index + 1}/${cards.length}` : "";
 
   return (
     <GameLayout
       title="Ich hab noch nie"
       titleIcon={<span className="text-base">🙊</span>}
       glowColor="rgba(14,165,233,0.10)"
-      counter={counter}
+      counter={cards.length > 0 ? `${index + 1}/${cards.length}` : ""}
     >
       <div className="flex flex-1 flex-col justify-between">
+        {/* Karte */}
         <div className="flex flex-1 items-center justify-center py-4">
           {loading ? (
-            <div className="text-zinc-500 text-lg font-bold">Lade Karten...</div>
+            <p className="font-black text-zinc-500">Lade Karten...</p>
           ) : !card ? (
-            <div className="text-zinc-500 text-lg font-bold">Keine Karten gefunden.</div>
+            <p className="font-black text-zinc-500">Keine Karten gefunden.</p>
           ) : (
             <div
               {...swipeHandlers}
-              className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.04] select-none"
               style={{ touchAction: "pan-y" }}
+              className="
+                relative w-full max-w-sm overflow-hidden rounded-3xl
+                border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl
+                shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)]
+                select-none
+              "
             >
               <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-sky-400 to-cyan-400" />
               <div className="p-6 pb-8 pt-7">
-                <span className="inline-block rounded-xl bg-sky-900/50 px-3 py-1 text-xs font-black uppercase tracking-widest text-sky-300">
-                  Ich hab noch nie...
+                <span className="inline-block rounded-xl bg-sky-900/60 px-3 py-1 text-xs font-black uppercase tracking-widest text-sky-300">
+                  Sozial
                 </span>
                 <div className="my-8 text-center text-6xl">🙊</div>
                 <p className="text-center text-xl font-black text-white leading-snug">
@@ -118,28 +119,45 @@ export default function IchHabNochNie() {
         </div>
 
         <div className="flex flex-col gap-3 pb-2">
+          {/* Buttons – beide flex-1 */}
           <div className="flex gap-3">
             <button
               onClick={handleSchonGetan}
               disabled={schonGetan}
-              className={`flex items-center gap-2 rounded-2xl border border-amber-900/40 px-6 py-4 font-black text-base text-amber-300 transition-all active:scale-95 disabled:opacity-50 ${
-                trinkenFlash ? "bg-amber-800/80" : "bg-amber-950/80"
-              }`}
+              className={`
+                flex flex-1 items-center justify-center gap-2
+                rounded-2xl py-4 font-black text-base text-amber-300
+                border border-amber-900/50
+                transition-all active:scale-95 disabled:opacity-50
+                shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
+                ${trinkenFlash ? "bg-amber-800/80" : "bg-amber-950/80"}
+              `}
             >
               <Beer className="h-5 w-5" />
               Schon getan
             </button>
             <button
               onClick={nächsteKarte}
-              className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 py-4 text-base font-black text-white shadow-lg shadow-sky-900/40 transition-all active:scale-95"
+              className="
+                flex flex-1 items-center justify-center gap-2
+                rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400
+                py-4 text-base font-black text-white
+                shadow-[0_0_20px_rgba(14,165,233,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]
+                transition-all active:scale-95
+              "
             >
               <SkipForward className="h-5 w-5" />
               Nächste Karte
             </button>
           </div>
 
-          {/* Einreichen */}
-          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] overflow-hidden">
+          {/* Einreichen Accordion */}
+          <div
+            className="
+              rounded-2xl border border-white/[0.10] bg-white/[0.05] backdrop-blur-xl overflow-hidden
+              shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
+            "
+          >
             <button
               onClick={() => setFormOffen(!formOffen)}
               className="flex w-full items-center justify-between px-4 py-3 text-sm font-bold text-zinc-400 hover:text-zinc-200 transition-colors"
@@ -155,7 +173,7 @@ export default function IchHabNochNie() {
                   onChange={(e) => setEingabe(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && einreichen()}
                   placeholder="...in einem Flugzeug geweint."
-                  className="flex-1 rounded-xl bg-white/[0.06] px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none focus:ring-2 focus:ring-sky-500"
+                  className="flex-1 rounded-xl bg-white/[0.08] px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none focus:ring-2 focus:ring-sky-500"
                 />
                 <button
                   onClick={einreichen}

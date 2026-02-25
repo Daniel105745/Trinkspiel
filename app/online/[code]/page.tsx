@@ -179,7 +179,7 @@ export default function RoomPage() {
     <GameLayout title="Lobby" titleIcon={<Globe className="h-4 w-4 text-sky-400" />} glowColor="rgba(14,165,233,0.10)">
       <div className="flex flex-col gap-5">
         {RoomHeader}
-        <div className="rounded-3xl border border-white/[0.08] bg-white/[0.04] p-4">
+        <div className="rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_4px_20px_rgba(0,0,0,0.3)] p-4">
           <p className="mb-3 text-xs font-black uppercase tracking-widest text-zinc-500">Verbundene Spieler</p>
           <div className="flex flex-col gap-2">
             {players.length === 0 ? <p className="text-sm font-semibold text-zinc-600 py-2">Warte auf Spieler...</p>
@@ -241,7 +241,7 @@ export default function RoomPage() {
               <div className="flex-1 rounded-2xl border border-emerald-800/40 bg-emerald-950/30 py-2.5 text-center"><p className="font-black text-emerald-200">{currentMeta.player2}</p></div>
             </div>
           )}
-          <div className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.04]">
+          <div className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)]">
             <div className={`absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r ${cardGradient}`} />
             <div className="p-6 pb-8 pt-7">
               {currentGame === "wahrheit-oder-pflicht" && currentMeta.typ && (
@@ -264,21 +264,21 @@ export default function RoomPage() {
           {isHost ? (
             currentGame === "wahrheit-oder-pflicht" ? (
               <div className="flex gap-3">
-                <button onClick={() => karteZiehen("wahrheit")} disabled={isLoading} className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-violet-500 py-4 text-base font-black text-white transition-all active:scale-95 disabled:opacity-60">
+                <button onClick={() => karteZiehen("wahrheit")} disabled={isLoading} className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-violet-500 py-4 text-base font-black text-white shadow-[0_0_16px_rgba(139,92,246,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95 disabled:opacity-60">
                   <HelpCircle className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} /> Wahrheit
                 </button>
-                <button onClick={() => karteZiehen("pflicht")} disabled={isLoading} className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-pink-600 to-pink-500 py-4 text-base font-black text-white transition-all active:scale-95 disabled:opacity-60">
+                <button onClick={() => karteZiehen("pflicht")} disabled={isLoading} className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-pink-600 to-pink-500 py-4 text-base font-black text-white shadow-[0_0_16px_rgba(236,72,153,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95 disabled:opacity-60">
                   <Flame className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} /> Pflicht
                 </button>
               </div>
             ) : (
-              <button onClick={() => karteZiehen()} disabled={isLoading} className={`flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${cardGradient} py-5 text-xl font-black text-white shadow-lg transition-all active:scale-95 disabled:opacity-70`}>
+              <button onClick={() => karteZiehen()} disabled={isLoading} className={`flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${cardGradient} py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(99,102,241,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95 disabled:opacity-70`}>
                 <SkipForward className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} />
                 {currentCardText ? "Nächste Karte" : "Erste Karte ziehen"}
               </button>
             )
           ) : (
-            <div className="flex w-full items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.03] py-5">
+            <div className="flex w-full items-center justify-center rounded-2xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] py-5">
               <p className="text-sm font-black text-zinc-500">Der Host zieht die Karten</p>
             </div>
           )}
