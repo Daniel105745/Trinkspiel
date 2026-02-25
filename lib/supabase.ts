@@ -13,6 +13,14 @@ export type IchHabNochNie = {
   noch_nie_count: number;
 };
 
+export type Room = {
+  id: string;
+  created_at: string;
+  current_card_id: number | null;
+  current_card_text: string | null;
+  host_id: string;
+};
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
