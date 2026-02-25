@@ -1,111 +1,104 @@
 import Link from "next/link";
-import { Beer, Scale, Hand, Users, Zap, ChevronRight, Globe } from "lucide-react";
+import { Eye, Zap, Users2, Radio, Globe } from "lucide-react";
 
-const LOKALE_SPIELE = [
+const SPIELE = [
   {
     href: "/wahrheit-oder-pflicht",
     title: "Wahrheit oder Pflicht",
-    desc: "Frage oder Aufgabe – du entscheidest",
-    Icon: Scale,
-    accent: "text-sky-400",
-    border: "border-sky-900/60",
-    bg: "bg-sky-950/30",
-    glow: "hover:border-sky-700/80",
+    subtitle: "Truth or Dare",
+    Icon: Eye,
+    iconGradient: "from-violet-500 to-purple-700",
+    cardBg: "bg-[#1a0b2e]",
+    border: "border-purple-900/40",
   },
   {
     href: "/ich-hab-noch-nie",
-    title: "Ich hab noch nie...",
-    desc: "Gestehe und trink wenn nötig",
-    Icon: Hand,
-    accent: "text-emerald-400",
-    border: "border-emerald-900/60",
-    bg: "bg-emerald-950/30",
-    glow: "hover:border-emerald-700/80",
+    title: "Ich hab noch nie",
+    subtitle: "Never Have I Ever",
+    Icon: Zap,
+    iconGradient: "from-sky-400 to-blue-600",
+    cardBg: "bg-[#0b152e]",
+    border: "border-blue-900/40",
   },
   {
     href: "/wer-wuerde-eher",
-    title: "Wer würde eher...?",
-    desc: "Kombiniert Freunde mit Aufgaben",
-    Icon: Users,
-    accent: "text-violet-400",
-    border: "border-violet-900/60",
-    bg: "bg-violet-950/30",
-    glow: "hover:border-violet-700/80",
+    title: "Am ehesten würde...",
+    subtitle: "Most Likely To",
+    Icon: Users2,
+    iconGradient: "from-green-400 to-emerald-600",
+    cardBg: "bg-[#0b200f]",
+    border: "border-green-900/40",
   },
   {
     href: "/buzzer",
-    title: "Buzzer",
-    desc: "Reaktionsspiel – wer langsam ist, trinkt",
-    Icon: Zap,
-    accent: "text-red-400",
-    border: "border-red-900/60",
-    bg: "bg-red-950/30",
-    glow: "hover:border-red-700/80",
+    title: "Buzzer Mode",
+    subtitle: "Wer drückt zuerst?",
+    Icon: Radio,
+    iconGradient: "from-orange-400 to-red-600",
+    cardBg: "bg-[#2a0b0b]",
+    border: "border-red-900/40",
   },
 ];
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center bg-zinc-950 p-6 pb-12">
-      {/* Header */}
-      <header className="flex w-full max-w-md items-center gap-3 pt-6 pb-8">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-400">
-          <Beer className="h-6 w-6 text-zinc-950" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-zinc-100 leading-tight">Trinkspiel</h1>
-          <p className="text-sm text-zinc-500">Wähle ein Spiel</p>
-        </div>
-      </header>
-
-      <div className="w-full max-w-md flex flex-col gap-6">
-        {/* Lokal */}
-        <section>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-600">
-            Lokal — Einzelgerät
-          </p>
-          <div className="grid grid-cols-2 gap-4">
-            {LOKALE_SPIELE.map(({ href, title, desc, Icon, accent, border, bg, glow }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`flex flex-col justify-between rounded-2xl border p-5 transition-all active:scale-95 ${border} ${bg} ${glow}`}
-              >
-                <Icon className={`mb-4 h-8 w-8 ${accent}`} />
-                <div>
-                  <p className="font-bold text-zinc-100 leading-snug text-base">{title}</p>
-                  <p className="mt-1 text-xs text-zinc-500 leading-snug">{desc}</p>
-                </div>
-                <ChevronRight className={`mt-4 h-4 w-4 self-end ${accent} opacity-60`} />
-              </Link>
-            ))}
+    <main className="min-h-screen bg-[#0d0f1e] flex flex-col items-center px-5 pb-10">
+      {/* Hero */}
+      <div className="flex flex-col items-center gap-4 pt-16 pb-10">
+        <div className="relative">
+          <div className="absolute inset-0 scale-[2] rounded-full bg-violet-600/25 blur-3xl" />
+          <div className="relative flex h-24 w-24 items-center justify-center rounded-[28px] bg-gradient-to-br from-violet-500 to-pink-500 text-5xl shadow-2xl shadow-violet-900/60">
+            🍺
           </div>
-        </section>
-
-        {/* Online */}
-        <section>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-600">
-            Online — Mehrere Geräte
+        </div>
+        <div className="text-center">
+          <h1 className="text-5xl font-black text-white tracking-tight">
+            Trinkspiel App
+          </h1>
+          <p className="mt-2 text-lg text-zinc-400 tracking-wide">
+            Party • Spaß • Chaos
           </p>
-          <Link
-            href="/online"
-            className="flex items-center justify-between rounded-2xl border border-amber-900/60 bg-amber-950/20 p-5 transition-all active:scale-95 hover:border-amber-700/80"
-          >
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-400/10">
-                <Globe className="h-6 w-6 text-amber-400" />
-              </div>
-              <div>
-                <p className="font-bold text-zinc-100 text-base">Online Modus</p>
-                <p className="text-xs text-zinc-500 mt-0.5">
-                  Raum erstellen oder beitreten
-                </p>
-              </div>
-            </div>
-            <ChevronRight className="h-5 w-5 text-amber-400 opacity-60" />
-          </Link>
-        </section>
+        </div>
       </div>
+
+      {/* Spielkarten */}
+      <div className="grid w-full max-w-sm grid-cols-2 gap-4">
+        {SPIELE.map(({ href, title, subtitle, Icon, iconGradient, cardBg, border }) => (
+          <Link
+            key={href}
+            href={href}
+            className={`flex min-h-[160px] flex-col rounded-3xl border p-4 transition-transform active:scale-95 ${cardBg} ${border}`}
+          >
+            <div
+              className={`mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${iconGradient}`}
+            >
+              <Icon className="h-6 w-6 text-white" />
+            </div>
+            <p className="text-base font-black text-white leading-tight">{title}</p>
+            <p className="mt-1 text-sm font-semibold text-zinc-400">{subtitle}</p>
+          </Link>
+        ))}
+      </div>
+
+      {/* ODER Divider */}
+      <div className="my-7 flex w-full max-w-sm items-center gap-4">
+        <div className="h-px flex-1 bg-white/10" />
+        <span className="text-xs font-black tracking-[0.3em] text-zinc-500">ODER</span>
+        <div className="h-px flex-1 bg-white/10" />
+      </div>
+
+      {/* Online Multiplayer */}
+      <Link href="/online" className="w-full max-w-sm">
+        <div className="flex items-center justify-center gap-3 rounded-3xl bg-gradient-to-r from-sky-400 to-cyan-300 py-5 text-xl font-black text-white shadow-xl shadow-sky-900/40 active:scale-95 transition-transform">
+          <Globe className="h-6 w-6" />
+          Online Multiplayer
+        </div>
+      </Link>
+
+      {/* Footer */}
+      <p className="mt-8 text-sm font-semibold text-zinc-600">
+        Nur für Personen ab 18 Jahren 🔞
+      </p>
     </main>
   );
 }

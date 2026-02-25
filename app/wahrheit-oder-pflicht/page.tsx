@@ -1,104 +1,132 @@
 "use client";
 
-import { useState } from "react";
-import { HelpCircle, Flame, AlertCircle } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { SkipForward, Flame, Beer } from "lucide-react";
+import { useSwipeable } from "react-swipeable";
 import GameLayout from "@/components/GameLayout";
 import { supabase, type Aufgabe } from "@/lib/supabase";
 
-type Typ = "wahrheit" | "pflicht";
-
-async function ladeKarte(typ: Typ, aktuelleId: number | null) {
-  const { data, error } = await supabase
-    .from("aufgaben")
-    .select("id, text, typ")
-    .eq("typ", typ)
-    .neq("id", aktuelleId ?? 0)
-    .limit(10);
-
-  if (error || !data || data.length === 0) return null;
-  return data[Math.floor(Math.random() * data.length)] as Aufgabe;
-}
+const EMOJIS: Record<string, string> = {
+  wahrheit: "🤔",
+  pflicht: "😈",
+};
 
 export default function WahrheitOderPflicht() {
-  const [karte, setKarte] = useState<Aufgabe | null>(null);
-  const [aktiverTyp, setAktiverTyp] = useState<Typ | null>(null);
-  const [isLoading, setIsLoading] = useState<Typ | null>(null);
-  const [fehler, setFehler] = useState<string | null>(null);
+  const [cards, setCards] = useState<Aufgabe[]>([]);
+  const [index, setIndex] = useState(-1);
+  const [loading, setLoading] = useState(true);
+  const [trinkenCount, setTrinkenCount] = useState(0);
+  const [trinkenFlash, setTrinkenFlash] = useState(false);
 
-  async function ziehe(typ: Typ) {
-    setIsLoading(typ);
-    setFehler(null);
-    const neueKarte = await ladeKarte(typ, karte?.id ?? null);
-    if (!neueKarte) {
-      setFehler(`Keine ${typ === "wahrheit" ? "Wahrheitsfragen" : "Pflichtaufgaben"} in der Datenbank.`);
-    } else {
-      setKarte(neueKarte);
-      setAktiverTyp(typ);
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase
+        .from("aufgaben")
+        .select("id, text, typ")
+        .in("typ", ["wahrheit", "pflicht"]);
+      if (data && data.length > 0) {
+        const shuffled = [...data].sort(() => Math.random() - 0.5) as Aufgabe[];
+        setCards(shuffled);
+        setIndex(0);
+      }
+      setLoading(false);
     }
-    setIsLoading(null);
+    load();
+  }, []);
+
+  function nächsteKarte() {
+    setIndex((i) => (i + 1) % Math.max(cards.length, 1));
+    setTrinkenCount(0);
   }
 
+  function trinken() {
+    setTrinkenCount((n) => n + 1);
+    setTrinkenFlash(true);
+    setTimeout(() => setTrinkenFlash(false), 300);
+  }
+
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: nächsteKarte,
+    onSwipedRight: nächsteKarte,
+    preventScrollOnSwipe: true,
+    trackMouse: false,
+  });
+
+  const card = index >= 0 ? cards[index] : null;
+  const counter = cards.length > 0 ? `${index + 1}/${cards.length}` : "";
+  const isWahrheit = card?.typ === "wahrheit";
+
   return (
-    <GameLayout title="Wahrheit oder Pflicht">
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-between">
-        {/* Karten-Bereich */}
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 py-8">
-          {fehler ? (
-            <div className="flex w-full items-start gap-3 rounded-2xl border border-red-800 bg-red-950/50 p-6">
-              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
-              <p className="text-red-300">{fehler}</p>
-            </div>
-          ) : karte ? (
-            <>
-              {/* Typ-Badge */}
-              <div
-                className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-bold ${
-                  aktiverTyp === "wahrheit"
-                    ? "bg-sky-900/60 text-sky-300"
-                    : "bg-orange-900/60 text-orange-300"
-                }`}
-              >
-                {aktiverTyp === "wahrheit" ? (
-                  <HelpCircle className="h-4 w-4" />
-                ) : (
-                  <Flame className="h-4 w-4" />
-                )}
-                {aktiverTyp === "wahrheit" ? "Wahrheit" : "Pflicht"}
-              </div>
-              {/* Karte */}
-              <div className="w-full rounded-2xl border border-zinc-800 bg-zinc-900 p-8 shadow-2xl">
-                <p className="text-center text-2xl font-semibold leading-relaxed text-zinc-100">
-                  {karte.text}
+    <GameLayout
+      title="Wahrheit oder Pflicht"
+      titleIcon={<Flame className="h-4 w-4 text-orange-400" />}
+      glowColor="rgba(124,58,237,0.13)"
+      counter={counter}
+    >
+      <div className="flex flex-1 flex-col justify-between">
+        {/* Karte */}
+        <div className="flex flex-1 items-center justify-center py-4">
+          {loading ? (
+            <div className="text-zinc-500 text-lg font-bold">Lade Karten...</div>
+          ) : !card ? (
+            <div className="text-zinc-500 text-lg font-bold">Keine Karten gefunden.</div>
+          ) : (
+            <div
+              {...swipeHandlers}
+              className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.04] select-none"
+              style={{ touchAction: "pan-y" }}
+            >
+              {/* Gradient top border */}
+              <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-violet-500 to-pink-500" />
+
+              <div className="p-6 pb-8 pt-7">
+                {/* Badge */}
+                <span
+                  className={`inline-block rounded-xl px-3 py-1 text-xs font-black uppercase tracking-widest ${
+                    isWahrheit
+                      ? "bg-violet-800/60 text-violet-200"
+                      : "bg-pink-900/60 text-pink-200"
+                  }`}
+                >
+                  {isWahrheit ? "Wahrheit" : "Pflicht"}
+                </span>
+
+                {/* Emoji */}
+                <div className="my-8 text-center text-6xl">
+                  {EMOJIS[card.typ] ?? "🎲"}
+                </div>
+
+                {/* Frage */}
+                <p className="text-center text-xl font-black text-white leading-snug">
+                  {card.text}
+                </p>
+
+                {/* Swipe-Hint */}
+                <p className="mt-10 text-center text-xs font-semibold text-zinc-600">
+                  ← Swipe für nächste Karte →
                 </p>
               </div>
-            </>
-          ) : (
-            <div className="w-full rounded-2xl border border-dashed border-zinc-700 bg-zinc-900/40 p-12 text-center">
-              <p className="text-zinc-500 text-lg">
-                Wähle <span className="text-sky-400 font-semibold">Wahrheit</span> oder{" "}
-                <span className="text-orange-400 font-semibold">Pflicht</span>
-              </p>
             </div>
           )}
         </div>
 
         {/* Buttons */}
-        <div className="flex gap-3 pb-8">
+        <div className="flex gap-3 pb-2">
           <button
-            onClick={() => ziehe("wahrheit")}
-            disabled={isLoading !== null}
-            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-sky-500 py-5 text-lg font-bold text-white shadow-lg transition-all active:scale-95 disabled:opacity-60 hover:bg-sky-400"
+            onClick={trinken}
+            className={`flex items-center gap-2 rounded-2xl px-6 py-4 font-black text-base text-amber-300 transition-all active:scale-95 ${
+              trinkenFlash ? "bg-amber-800/80" : "bg-amber-950/80"
+            } border border-amber-900/40`}
           >
-            <HelpCircle className={`h-5 w-5 ${isLoading === "wahrheit" ? "animate-spin" : ""}`} />
-            Wahrheit
+            <Beer className="h-5 w-5" />
+            Trinken{trinkenCount > 0 ? ` (${trinkenCount})` : ""}
           </button>
           <button
-            onClick={() => ziehe("pflicht")}
-            disabled={isLoading !== null}
-            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-orange-500 py-5 text-lg font-bold text-white shadow-lg transition-all active:scale-95 disabled:opacity-60 hover:bg-orange-400"
+            onClick={nächsteKarte}
+            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-500 py-4 text-base font-black text-white shadow-lg shadow-violet-900/40 transition-all active:scale-95"
           >
-            <Flame className={`h-5 w-5 ${isLoading === "pflicht" ? "animate-spin" : ""}`} />
-            Pflicht
+            <SkipForward className="h-5 w-5" />
+            Nächste Karte
           </button>
         </div>
       </div>
