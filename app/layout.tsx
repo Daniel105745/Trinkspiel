@@ -28,7 +28,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="de" className={nunito.variable}>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased bg-black flex justify-center min-h-screen">
+        <div className="w-full max-w-[430px] min-h-screen relative shadow-[0_0_80px_rgba(0,0,0,0.9)]">
+          {children}
+        </div>
+      </body>
     </html>
   );
 }
