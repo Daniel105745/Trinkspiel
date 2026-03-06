@@ -5,20 +5,30 @@ import { useParams, useRouter } from "next/navigation";
 import {
   RefreshCw, Users, Copy, Check, Crown, AlertCircle,
   Loader2, LogOut, Beer, Scale, Hand, ChevronLeft,
-  HelpCircle, Flame, Globe, Eye, Zap, Users2, Radio,
+  HelpCircle, Flame, Globe, Eye, Zap, Users2, Radio, UserX,
 } from "lucide-react";
 import { SkipForward } from "lucide-react";
 import GameLayout from "@/components/GameLayout";
 import { supabase, type Room } from "@/lib/supabase";
 
 type PlayerInfo = { name: string; isHost: boolean; joinedAt: number };
-type GameId = "allgemein" | "wahrheit-oder-pflicht" | "ich-hab-noch-nie" | "wer-wuerde-eher";
+type GameId = "allgemein" | "wahrheit-oder-pflicht" | "ich-hab-noch-nie" | "wer-wuerde-eher" | "imposter";
+
+const IMPOSTER_WÖRTER = [
+  "Hund", "Katze", "Elefant", "Pinguin", "Giraffe", "Delfin", "Tiger", "Flamingo", "Panda", "Wolf",
+  "Pizza", "Sushi", "Burger", "Schokolade", "Avocado", "Pommes", "Steak", "Donut", "Tacos", "Ramen",
+  "Paris", "New York", "Tokio", "Sydney", "Dubai", "Barcelona", "London", "Berlin", "Hawaii", "Ibiza",
+  "Star Wars", "Titanic", "Avatar", "Friends", "Breaking Bad", "Harry Potter", "Matrix", "Joker", "Squid Game",
+  "Fußball", "Tennis", "Boxen", "Surfen", "Basketball", "Golf", "Ski", "Volleyball",
+  "Bier", "Gin Tonic", "Margarita", "Cocktail", "Shots", "Tequila", "Prosit", "Bierpong",
+];
 
 const SPIELE: { id: GameId; label: string; desc: string; Icon: React.ElementType; iconGradient: string; cardBg: string; border: string }[] = [
   { id: "allgemein",             label: "Freie Runde",          desc: "Alle Karten gemischt",         Icon: Beer,   iconGradient: "from-amber-400 to-orange-500",  cardBg: "bg-[#1a100b]", border: "border-amber-900/40" },
   { id: "wahrheit-oder-pflicht", label: "Wahrheit oder Pflicht", desc: "Truth or Dare",                Icon: Eye,    iconGradient: "from-violet-500 to-purple-700", cardBg: "bg-[#1a0b2e]", border: "border-purple-900/40" },
   { id: "ich-hab-noch-nie",      label: "Ich hab noch nie",     desc: "Never Have I Ever",            Icon: Zap,    iconGradient: "from-sky-400 to-blue-600",     cardBg: "bg-[#0b152e]", border: "border-blue-900/40" },
   { id: "wer-wuerde-eher",       label: "Am ehesten würde...",  desc: "Most Likely To",               Icon: Users2, iconGradient: "from-green-400 to-emerald-600", cardBg: "bg-[#0b200f]", border: "border-green-900/40" },
+  { id: "imposter",              label: "Imposter",             desc: "Wer ist der Verräter?",        Icon: UserX,  iconGradient: "from-red-500 to-orange-600",    cardBg: "bg-[#200b0b]", border: "border-red-900/40" },
 ];
 
 function getUserId() {
@@ -95,7 +105,13 @@ export default function RoomPage() {
   const karteZiehen = useCallback(async (typ?: "wahrheit" | "pflicht") => {
     setIsLoading(true);
     let cardText: string | null = null, cardId: number | null = null, meta: Record<string, string> = {};
-    if (currentGame === "ich-hab-noch-nie") {
+    if (currentGame === "imposter") {
+      const w = IMPOSTER_WÖRTER[Math.floor(Math.random() * IMPOSTER_WÖRTER.length)];
+      const pl = playersRef.current;
+      const imp = pl.length > 0 ? pl[Math.floor(Math.random() * pl.length)] : null;
+      meta = { word: w, imposterName: imp?.name ?? "", revealed: "false" };
+      cardText = "🕵️";
+    } else if (currentGame === "ich-hab-noch-nie") {
       const { data } = await supabase.from("ich_hab_noch_nie").select("id, text").neq("text", currentCardTextRef.current?.replace("Ich hab noch nie... ", "") ?? "").limit(10);
       if (data?.length) { const c = data[Math.floor(Math.random() * data.length)]; cardText = `Ich hab noch nie... ${c.text}`; }
     } else {
@@ -115,6 +131,12 @@ export default function RoomPage() {
     }
     setIsLoading(false);
   }, [currentGame, upperCode]);
+
+  const imposterAuflösung = useCallback(async () => {
+    const newMeta = { ...currentMeta, revealed: "true" };
+    await supabase.from("rooms").update({ current_meta: newMeta }).eq("id", upperCode);
+    setCurrentMeta(newMeta);
+  }, [currentMeta, upperCode]);
 
   async function spielWählen(gameId: GameId) {
     await supabase.from("rooms").update({ current_game: gameId, current_card_text: null, current_card_id: null, current_meta: {} }).eq("id", upperCode);
@@ -221,8 +243,14 @@ export default function RoomPage() {
     "wahrheit-oder-pflicht": "from-violet-600 to-pink-500",
     "ich-hab-noch-nie": "from-sky-500 to-cyan-400",
     "wer-wuerde-eher": "from-emerald-500 to-green-400",
+    "imposter": "from-red-500 to-orange-500",
   };
   const cardGradient = gradientMap[currentGame] ?? "from-violet-600 to-pink-500";
+
+  // Imposter: personalized role display
+  const myName = typeof window !== "undefined" ? sessionStorage.getItem("trinkspiel_name") || "Anonym" : "Anonym";
+  const isImposter = currentGame === "imposter" && currentMeta.imposterName === myName;
+  const imposterRevealed = currentMeta.revealed === "true";
 
   return (
     <GameLayout title={aktivesSpiel?.label ?? "Spiel"} titleIcon={aktivesSpiel ? <aktivesSpiel.Icon className="h-4 w-4 text-zinc-300" /> : undefined} glowColor="rgba(124,58,237,0.10)">
@@ -241,28 +269,93 @@ export default function RoomPage() {
               <div className="flex-1 rounded-2xl border border-emerald-800/40 bg-emerald-950/30 py-2.5 text-center"><p className="font-black text-emerald-200">{currentMeta.player2}</p></div>
             </div>
           )}
-          <div className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)]">
-            <div className={`absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r ${cardGradient}`} />
-            <div className="p-6 pb-8 pt-7">
-              {currentGame === "wahrheit-oder-pflicht" && currentMeta.typ && (
-                <span className={`mb-4 inline-block rounded-xl px-3 py-1 text-xs font-black uppercase tracking-widest ${currentMeta.typ === "wahrheit" ? "bg-violet-800/60 text-violet-200" : "bg-pink-900/60 text-pink-200"}`}>
-                  {currentMeta.typ}
-                </span>
-              )}
-              {currentCardText ? (
-                <p className="mt-4 text-center text-xl font-black text-white leading-snug">{currentCardText}</p>
+
+          {/* Imposter: personalized role card */}
+          {currentGame === "imposter" ? (
+            <div className="w-full max-w-sm">
+              {!currentMeta.word ? (
+                <div className="relative overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center">
+                  <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
+                  <div className="py-4">
+                    {isHost
+                      ? <p className="font-black text-zinc-500">Starte die erste Runde!</p>
+                      : <p className="font-black text-zinc-500">Warte auf den Host...</p>}
+                  </div>
+                </div>
+              ) : imposterRevealed ? (
+                <div className="relative overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center">
+                  <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
+                  <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-2">Auflösung</p>
+                  <p className="text-sm font-bold text-zinc-400 mb-1">Das Wort war</p>
+                  <p className="text-4xl font-black text-white mb-4">{currentMeta.word}</p>
+                  <p className="text-sm font-bold text-zinc-400 mb-1">Der Imposter war</p>
+                  <p className="text-2xl font-black text-red-400">{currentMeta.imposterName} 🕵️</p>
+                </div>
+              ) : isImposter ? (
+                <div className="relative overflow-hidden rounded-3xl border border-red-500/50 bg-red-950/40 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center">
+                  <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
+                  <div className="text-6xl mb-4">🕵️</div>
+                  <p className="text-2xl font-black text-red-400 mb-1">Du bist der</p>
+                  <p className="text-5xl font-black text-red-300">IMPOSTER!</p>
+                  <p className="mt-4 text-sm font-bold text-red-400/70">
+                    Täusche die anderen! Beschreibe das Wort so, als würdest du es kennen.
+                  </p>
+                </div>
               ) : (
-                <div className="py-8 text-center">
-                  {isHost ? <p className="font-black text-zinc-500">Zieh die erste Karte!</p>
-                    : <p className="font-black text-zinc-500">Warte auf den Host...</p>}
+                <div className="relative overflow-hidden rounded-3xl border border-emerald-500/50 bg-emerald-950/30 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center">
+                  <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-emerald-500 to-green-400" />
+                  <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-3">Das Wort ist</p>
+                  <p className="text-5xl font-black text-white mb-4">{currentMeta.word}</p>
+                  <p className="text-sm font-bold text-emerald-400/70">
+                    Finde den Imposter! Nenn das Wort nicht direkt.
+                  </p>
                 </div>
               )}
             </div>
-          </div>
+          ) : (
+            <div className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)]">
+              <div className={`absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r ${cardGradient}`} />
+              <div className="p-6 pb-8 pt-7">
+                {currentGame === "wahrheit-oder-pflicht" && currentMeta.typ && (
+                  <span className={`mb-4 inline-block rounded-xl px-3 py-1 text-xs font-black uppercase tracking-widest ${currentMeta.typ === "wahrheit" ? "bg-violet-800/60 text-violet-200" : "bg-pink-900/60 text-pink-200"}`}>
+                    {currentMeta.typ}
+                  </span>
+                )}
+                {currentCardText ? (
+                  <p className="mt-4 text-center text-xl font-black text-white leading-snug">{currentCardText}</p>
+                ) : (
+                  <div className="py-8 text-center">
+                    {isHost ? <p className="font-black text-zinc-500">Zieh die erste Karte!</p>
+                      : <p className="font-black text-zinc-500">Warte auf den Host...</p>}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex flex-col gap-3 pb-2">
           {isHost ? (
-            currentGame === "wahrheit-oder-pflicht" ? (
+            currentGame === "imposter" ? (
+              <div className="flex flex-col gap-3">
+                {currentMeta.word && !imposterRevealed && (
+                  <button
+                    onClick={imposterAuflösung}
+                    disabled={isLoading}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-500/40 bg-red-950/40 py-4 text-base font-black text-red-300 transition-all active:scale-95 disabled:opacity-60"
+                  >
+                    <UserX className="h-5 w-5" /> Auflösung anzeigen
+                  </button>
+                )}
+                <button
+                  onClick={() => karteZiehen()}
+                  disabled={isLoading}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-red-500 to-orange-500 py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95 disabled:opacity-70"
+                >
+                  <SkipForward className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} />
+                  {currentMeta.word ? "Neue Runde" : "Runde starten"}
+                </button>
+              </div>
+            ) : currentGame === "wahrheit-oder-pflicht" ? (
               <div className="flex gap-3">
                 <button onClick={() => karteZiehen("wahrheit")} disabled={isLoading} className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-violet-500 py-4 text-base font-black text-white shadow-[0_0_16px_rgba(139,92,246,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95 disabled:opacity-60">
                   <HelpCircle className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} /> Wahrheit
@@ -279,7 +372,9 @@ export default function RoomPage() {
             )
           ) : (
             <div className="flex w-full items-center justify-center rounded-2xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] py-5">
-              <p className="text-sm font-black text-zinc-500">Der Host zieht die Karten</p>
+              <p className="text-sm font-black text-zinc-500">
+                {currentGame === "imposter" ? "Schau auf dein Display – nur für dich!" : "Der Host zieht die Karten"}
+              </p>
             </div>
           )}
         </div>

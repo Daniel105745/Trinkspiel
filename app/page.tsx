@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Eye, Zap, Users2, Radio, Globe } from "lucide-react";
+import { Eye, Zap, Users2, Radio, Globe, UserX } from "lucide-react";
 
 const SPIELE = [
   {
@@ -10,6 +10,7 @@ const SPIELE = [
     iconGradient: "from-violet-500 to-purple-700",
     cardGradient: "from-purple-900/50 to-purple-950/30",
     border: "border-purple-500/20",
+    wide: false,
   },
   {
     href: "/ich-hab-noch-nie",
@@ -19,6 +20,7 @@ const SPIELE = [
     iconGradient: "from-sky-400 to-blue-600",
     cardGradient: "from-slate-800/60 to-blue-950/40",
     border: "border-sky-500/20",
+    wide: false,
   },
   {
     href: "/wer-wuerde-eher",
@@ -28,6 +30,7 @@ const SPIELE = [
     iconGradient: "from-green-400 to-emerald-600",
     cardGradient: "from-green-900/50 to-green-950/30",
     border: "border-green-500/20",
+    wide: false,
   },
   {
     href: "/buzzer",
@@ -37,6 +40,17 @@ const SPIELE = [
     iconGradient: "from-orange-400 to-red-600",
     cardGradient: "from-red-900/50 to-red-950/30",
     border: "border-red-500/20",
+    wide: false,
+  },
+  {
+    href: "/imposter",
+    title: "Imposter",
+    subtitle: "Wer ist der Verräter?",
+    Icon: UserX,
+    iconGradient: "from-red-500 to-orange-600",
+    cardGradient: "from-red-900/40 to-orange-950/30",
+    border: "border-red-500/30",
+    wide: true,
   },
 ];
 
@@ -70,16 +84,17 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Spielkarten – 2×2 Glassmorphism Grid */}
+      {/* Spielkarten – 2×2 Grid + Imposter full-width */}
       <div className="relative z-10 grid w-full max-w-sm grid-cols-2 gap-4">
-        {SPIELE.map(({ href, title, subtitle, Icon, iconGradient, cardGradient, border }) => (
+        {SPIELE.map(({ href, title, subtitle, Icon, iconGradient, cardGradient, border, wide }) => (
           <Link
             key={href}
             href={href}
             className={`
-              group flex min-h-[160px] flex-col rounded-3xl border p-4
+              group flex rounded-3xl border p-4
               bg-gradient-to-br ${cardGradient}
               ${border}
+              ${wide ? "col-span-2 flex-row items-center gap-4 py-5" : "min-h-[160px] flex-col"}
               backdrop-blur-xl
               shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.3)]
               transition-all duration-200
@@ -87,12 +102,14 @@ export default function Home() {
             `}
           >
             <div
-              className={`mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${iconGradient} shadow-lg`}
+              className={`flex items-center justify-center rounded-2xl bg-gradient-to-br ${iconGradient} shadow-lg ${wide ? "h-14 w-14 shrink-0" : "mb-4 h-12 w-12"}`}
             >
-              <Icon className="h-6 w-6 text-white" />
+              <Icon className={wide ? "h-7 w-7 text-white" : "h-6 w-6 text-white"} />
             </div>
-            <p className="text-base font-black text-white leading-tight">{title}</p>
-            <p className="mt-1 text-sm font-semibold text-zinc-400">{subtitle}</p>
+            <div>
+              <p className="text-base font-black text-white leading-tight">{title}</p>
+              <p className="mt-1 text-sm font-semibold text-zinc-400">{subtitle}</p>
+            </div>
           </Link>
         ))}
       </div>
