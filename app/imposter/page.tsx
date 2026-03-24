@@ -106,6 +106,7 @@ export default function ImposterPage() {
   const [hintWord, setHintWord] = useState("");
   const [scores, setScores] = useState<number[]>(Array(10).fill(0));
   const [roundNumber, setRoundNumber] = useState(0);
+  const [twoImposters, setTwoImposters] = useState(false);
 
   useEffect(() => {
     if (countdown === null) return;
@@ -121,7 +122,6 @@ export default function ImposterPage() {
 
   const isCurrentImposter = imposterIndices.includes(currentPlayer);
   const votedCorrectly = votedFor !== null && imposterIndices.includes(votedFor);
-  const twoImposters = playerCount >= 7;
 
   function kategorieWählen(k: string | null) {
     setKategorie(k);
@@ -232,14 +232,9 @@ export default function ImposterPage() {
             </div>
           )}
 
-          {/* Spieleranzahl */}
+          {/* Spieleranzahl + Imposter-Anzahl */}
           <div className="rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] p-5">
-            <p className="mb-4 text-xs font-black uppercase tracking-widest text-zinc-500">
-              Spieleranzahl
-              {twoImposters && (
-                <span className="ml-2 font-black text-orange-400">→ 2 Imposter!</span>
-              )}
-            </p>
+            <p className="mb-4 text-xs font-black uppercase tracking-widest text-zinc-500">Spieleranzahl</p>
             <div className="flex items-center justify-between gap-4">
               <button
                 onClick={() => setPlayerCount((p) => Math.max(3, p - 1))}
@@ -253,6 +248,26 @@ export default function ImposterPage() {
                 className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-zinc-300 transition-all active:scale-95"
               >
                 <Plus className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Imposter-Anzahl Toggle */}
+            <div className="mt-4 flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+              <div>
+                <p className="text-sm font-black text-zinc-300">2 Imposter</p>
+                <p className="text-xs font-semibold text-zinc-600">Mehr Chaos, mehr Spaß</p>
+              </div>
+              <button
+                onClick={() => setTwoImposters((v) => !v)}
+                className={`relative h-7 w-12 rounded-full transition-colors duration-200 ${
+                  twoImposters ? "bg-red-500" : "bg-white/10"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200 ${
+                    twoImposters ? "translate-x-5" : "translate-x-0.5"
+                  }`}
+                />
               </button>
             </div>
           </div>
