@@ -23,6 +23,27 @@ const IMPOSTER_WÖRTER = [
   "Bier", "Gin Tonic", "Margarita", "Cocktail", "Shots", "Tequila", "Prosit", "Bierpong",
 ];
 
+const IMPOSTER_HILFSWÖRTER: Record<string, string> = {
+  "Hund": "Leine", "Katze": "Fell", "Elefant": "Grau", "Pinguin": "Frack",
+  "Giraffe": "Hals", "Delfin": "Springen", "Tiger": "Streifen",
+  "Flamingo": "Rosa", "Panda": "Schwarz-Weiß", "Wolf": "Heulen",
+  "Pizza": "Tomaten", "Sushi": "Stäbchen", "Burger": "Brötchen",
+  "Schokolade": "Kakao", "Avocado": "Kernig", "Pommes": "Salz",
+  "Steak": "Grill", "Donut": "Loch", "Tacos": "Mexiko", "Ramen": "Suppe",
+  "Paris": "Frankreich", "New York": "Wolkenkratzer", "Tokio": "Japan",
+  "Sydney": "Australien", "Dubai": "Wüste", "Barcelona": "Spanien",
+  "London": "Regen", "Berlin": "Hauptstadt", "Hawaii": "Vulkan", "Ibiza": "Feiern",
+  "Star Wars": "Raumschiff", "Titanic": "Eisberg", "Avatar": "Blau",
+  "Friends": "Sofa", "Breaking Bad": "Chemie", "Harry Potter": "Magie",
+  "Matrix": "Simulation", "Joker": "Clown", "Squid Game": "Spiele",
+  "Fußball": "Tor", "Tennis": "Schläger", "Boxen": "Ring",
+  "Surfen": "Welle", "Basketball": "Korb", "Golf": "Fairway",
+  "Ski": "Schnee", "Volleyball": "Netz",
+  "Bier": "Hopfen", "Gin Tonic": "Gurke", "Margarita": "Salz",
+  "Cocktail": "Shaker", "Shots": "Schnell", "Tequila": "Limette",
+  "Prosit": "Anstoßen", "Bierpong": "Becher",
+};
+
 const SPIELE: { id: GameId; label: string; desc: string; Icon: React.ElementType; iconGradient: string; cardBg: string; border: string }[] = [
   { id: "allgemein",             label: "Freie Runde",          desc: "Alle Karten gemischt",         Icon: Beer,   iconGradient: "from-amber-400 to-orange-500",  cardBg: "bg-[#1a100b]", border: "border-amber-900/40" },
   { id: "wahrheit-oder-pflicht", label: "Wahrheit oder Pflicht", desc: "Truth or Dare",                Icon: Eye,    iconGradient: "from-violet-500 to-purple-700", cardBg: "bg-[#1a0b2e]", border: "border-purple-900/40" },
@@ -61,12 +82,35 @@ export default function RoomPage() {
   const [fehler, setFehler] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  const [countdown, setCountdown] = useState<number | null>(null);
+
   const currentCardIdRef = useRef<number | null>(null);
   const currentCardTextRef = useRef<string | null>(null);
   const playersRef = useRef<PlayerInfo[]>([]);
+  const prevImposterWordRef = useRef<string | undefined>(undefined);
 
   useEffect(() => { playersRef.current = players; }, [players]);
   useEffect(() => { currentCardTextRef.current = currentCardText; }, [currentCardText]);
+
+  // Countdown wenn neue Imposter-Runde startet
+  useEffect(() => {
+    if (currentGame !== "imposter") { prevImposterWordRef.current = undefined; return; }
+    if (prevImposterWordRef.current === undefined) {
+      prevImposterWordRef.current = currentMeta.word;
+      return;
+    }
+    if (currentMeta.word && currentMeta.word !== prevImposterWordRef.current) {
+      prevImposterWordRef.current = currentMeta.word;
+      setCountdown(5);
+    }
+  }, [currentMeta.word, currentGame]);
+
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown === 0) { setCountdown(null); return; }
+    const t = setTimeout(() => setCountdown((c) => (c !== null ? c - 1 : null)), 1000);
+    return () => clearTimeout(t);
+  }, [countdown]);
 
   useEffect(() => {
     async function loadRoom() {
@@ -109,7 +153,8 @@ export default function RoomPage() {
       const w = IMPOSTER_WÖRTER[Math.floor(Math.random() * IMPOSTER_WÖRTER.length)];
       const pl = playersRef.current;
       const imp = pl.length > 0 ? pl[Math.floor(Math.random() * pl.length)] : null;
-      meta = { word: w, imposterName: imp?.name ?? "", revealed: "false" };
+      const hint = IMPOSTER_HILFSWÖRTER[w] ?? "???";
+      meta = { word: w, imposterName: imp?.name ?? "", revealed: "false", hintWord: hint };
       cardText = "🕵️";
     } else if (currentGame === "ich-hab-noch-nie") {
       const { data } = await supabase.from("ich_hab_noch_nie").select("id, text").neq("text", currentCardTextRef.current?.replace("Ich hab noch nie... ", "") ?? "").limit(10);
@@ -273,7 +318,18 @@ export default function RoomPage() {
           {/* Imposter: personalized role card */}
           {currentGame === "imposter" ? (
             <div className="w-full max-w-sm">
-              {!currentMeta.word ? (
+              {countdown !== null ? (
+                <div className="relative overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center">
+                  <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
+                  <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-6">
+                    Neue Runde startet in
+                  </p>
+                  <div className="flex h-40 w-40 mx-auto items-center justify-center rounded-full border border-red-500/30 bg-red-950/40 mb-6">
+                    <span className="text-8xl font-black text-white">{countdown}</span>
+                  </div>
+                  <p className="text-base font-black text-zinc-400">Macht euch bereit!</p>
+                </div>
+              ) : !currentMeta.word ? (
                 <div className="relative overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center">
                   <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
                   <div className="py-4">
@@ -297,8 +353,16 @@ export default function RoomPage() {
                   <div className="text-6xl mb-4">🕵️</div>
                   <p className="text-2xl font-black text-red-400 mb-1">Du bist der</p>
                   <p className="text-5xl font-black text-red-300">IMPOSTER!</p>
+                  {currentMeta.hintWord && (
+                    <div className="mt-5 rounded-2xl border border-red-500/20 bg-red-500/10 px-5 py-3">
+                      <p className="text-xs font-black uppercase tracking-widest text-red-500/60 mb-1">
+                        Dein Hilfswort
+                      </p>
+                      <p className="text-2xl font-black text-red-200">{currentMeta.hintWord}</p>
+                    </div>
+                  )}
                   <p className="mt-4 text-sm font-bold text-red-400/70">
-                    Täusche die anderen! Beschreibe das Wort so, als würdest du es kennen.
+                    Nutze dein Hilfswort – aber nenn das echte Wort nicht!
                   </p>
                 </div>
               ) : (

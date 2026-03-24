@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserX, Shuffle, Eye, EyeOff, ChevronRight, RotateCcw, Minus, Plus } from "lucide-react";
 import GameLayout from "@/components/GameLayout";
 
@@ -39,9 +39,55 @@ const WÖRTER: Record<string, string[]> = {
 
 const ALLE = Object.values(WÖRTER).flat();
 
+const HILFSWÖRTER: Record<string, string> = {
+  // Tiere
+  "Hund": "Leine", "Katze": "Fell", "Elefant": "Grau", "Pinguin": "Frack",
+  "Giraffe": "Hals", "Delfin": "Springen", "Tiger": "Streifen",
+  "Krokodil": "Sumpf", "Flamingo": "Rosa", "Panda": "Schwarz-Weiß",
+  "Löwe": "König", "Affe": "Baum", "Zebra": "Gestreift",
+  "Koala": "Australien", "Otter": "Schwimmen", "Papagei": "Bunt",
+  "Schildkröte": "Langsam", "Hai": "Flosse", "Wolf": "Heulen", "Fuchs": "Clever",
+  // Essen
+  "Pizza": "Tomaten", "Sushi": "Stäbchen", "Burger": "Brötchen",
+  "Schokolade": "Kakao", "Avocado": "Kernig", "Käse": "Reifen",
+  "Pommes": "Salz", "Nudeln": "Mehl", "Steak": "Grill", "Eis": "Kugel",
+  "Donut": "Loch", "Tacos": "Mexiko", "Ramen": "Suppe",
+  "Croissant": "Butter", "Hot Dog": "Senf", "Popcorn": "Kino",
+  "Chips": "Tüte", "Cupcake": "Glasur", "Brezeln": "Salz", "Spaghetti": "Soße",
+  // Orte
+  "Paris": "Frankreich", "New York": "Wolkenkratzer", "Tokio": "Japan",
+  "Sydney": "Australien", "Rom": "Italien", "Dubai": "Wüste",
+  "Barcelona": "Spanien", "Malediven": "Insel", "Las Vegas": "Casino",
+  "London": "Regen", "Berlin": "Hauptstadt", "Ägypten": "Pyramide",
+  "Hawaii": "Vulkan", "Venedig": "Gondel", "Ibiza": "Feiern",
+  "Amsterdam": "Kanal", "Prag": "Brücke", "Wien": "Walzer",
+  // Film & TV
+  "Star Wars": "Raumschiff", "Titanic": "Eisberg", "Avatar": "Blau",
+  "Friends": "Sofa", "Breaking Bad": "Chemie", "Harry Potter": "Magie",
+  "Game of Thrones": "Drachen", "Avengers": "Superheld", "Joker": "Clown",
+  "Matrix": "Simulation", "Inception": "Traum", "Squid Game": "Spiele",
+  "Stranger Things": "Kinder", "Der Pate": "Mafia", "Pulp Fiction": "Gangster",
+  // Sport
+  "Fußball": "Tor", "Tennis": "Schläger", "Boxen": "Ring",
+  "Surfen": "Welle", "Skifahren": "Schnee", "Basketball": "Korb",
+  "Golf": "Fairway", "Volleyball": "Netz", "Schwimmen": "Bahn",
+  "Radfahren": "Pedal", "Kampfsport": "Gürtel", "Formel 1": "Rennstrecke",
+  "Rugby": "Oval", "Baseball": "Handschuh",
+  // Party
+  "Bier": "Hopfen", "Prosit": "Anstoßen", "Schnapsglas": "Klein",
+  "Kater": "Kopfweh", "Bierpong": "Becher", "Freibier": "Gratis",
+  "Gin Tonic": "Gurke", "Margarita": "Salz", "Cocktail": "Shaker",
+  "Shots": "Schnell", "Weinschorle": "Wein", "Longdrink": "Eis",
+  "Wodka": "Russland", "Tequila": "Limette", "Sekt": "Blasen",
+};
+
 function pickWord(kat: string | null): string {
   const pool = kat ? WÖRTER[kat] : ALLE;
   return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function pickHint(w: string): string {
+  return HILFSWÖRTER[w] ?? "???";
 }
 
 type Phase = "setup" | "passing" | "playing" | "result";
@@ -56,6 +102,15 @@ export default function ImposterPage() {
   const [showRole, setShowRole] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
   const [votedFor, setVotedFor] = useState<number | null>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [hintWord, setHintWord] = useState<string>("");
+
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown === 0) { setCountdown(null); return; }
+    const t = setTimeout(() => setCountdown((c) => (c !== null ? c - 1 : null)), 1000);
+    return () => clearTimeout(t);
+  }, [countdown]);
 
   function kategorieWählen(k: string | null) {
     setKategorie(k);
@@ -68,6 +123,8 @@ export default function ImposterPage() {
     setShowRole(false);
     setAcknowledged(false);
     setVotedFor(null);
+    setHintWord(pickHint(word));
+    setCountdown(5);
     setPhase("passing");
   }
 
@@ -192,6 +249,26 @@ export default function ImposterPage() {
 
   // ── PASSING ────────────────────────────────────────────────────────────────
   if (phase === "passing") {
+    if (countdown !== null) {
+      return (
+        <GameLayout
+          title="Imposter"
+          titleIcon={<UserX className="h-4 w-4 text-red-400" />}
+          glowColor="rgba(239,68,68,0.10)"
+        >
+          <div className="flex flex-1 flex-col items-center justify-center gap-6 pb-2">
+            <p className="text-xs font-black uppercase tracking-widest text-zinc-500">
+              Neue Runde startet in
+            </p>
+            <div className="relative flex h-48 w-48 items-center justify-center rounded-full border border-red-500/30 bg-red-950/40">
+              <span className="text-9xl font-black text-white">{countdown}</span>
+            </div>
+            <p className="text-lg font-black text-zinc-400">Macht euch bereit!</p>
+          </div>
+        </GameLayout>
+      );
+    }
+
     return (
       <GameLayout
         title="Imposter"
@@ -246,8 +323,14 @@ export default function ImposterPage() {
                     </div>
                     <p className="text-2xl font-black text-red-400">Du bist der</p>
                     <p className="text-5xl font-black text-red-300">IMPOSTER!</p>
+                    <div className="w-full rounded-2xl border border-red-500/20 bg-red-500/10 px-5 py-3 text-center">
+                      <p className="text-xs font-black uppercase tracking-widest text-red-500/60 mb-1">
+                        Dein Hilfswort
+                      </p>
+                      <p className="text-2xl font-black text-red-200">{hintWord}</p>
+                    </div>
                     <p className="text-center text-sm font-bold text-red-400/70">
-                      Beschreibe das Wort so, als würdest du es kennen.
+                      Nutze dein Hilfswort – aber nenn das echte Wort nicht!
                     </p>
                   </>
                 ) : (
