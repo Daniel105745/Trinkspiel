@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { UserX, Shuffle, Eye, EyeOff, ChevronRight, RotateCcw, Minus, Plus } from "lucide-react";
+import { UserX, Shuffle, Eye, EyeOff, ChevronRight, RotateCcw, Minus, Plus, Trophy } from "lucide-react";
 import GameLayout from "@/components/GameLayout";
+import { playTick, playCountdownEnd, playWin, playLose } from "@/lib/sounds";
 
 const WÖRTER: Record<string, string[]> = {
   "Tiere 🐾": [
@@ -40,40 +41,34 @@ const WÖRTER: Record<string, string[]> = {
 const ALLE = Object.values(WÖRTER).flat();
 
 const HILFSWÖRTER: Record<string, string> = {
-  // Tiere
   "Hund": "Leine", "Katze": "Fell", "Elefant": "Grau", "Pinguin": "Frack",
   "Giraffe": "Hals", "Delfin": "Springen", "Tiger": "Streifen",
   "Krokodil": "Sumpf", "Flamingo": "Rosa", "Panda": "Schwarz-Weiß",
   "Löwe": "König", "Affe": "Baum", "Zebra": "Gestreift",
   "Koala": "Australien", "Otter": "Schwimmen", "Papagei": "Bunt",
   "Schildkröte": "Langsam", "Hai": "Flosse", "Wolf": "Heulen", "Fuchs": "Clever",
-  // Essen
   "Pizza": "Tomaten", "Sushi": "Stäbchen", "Burger": "Brötchen",
   "Schokolade": "Kakao", "Avocado": "Kernig", "Käse": "Reifen",
   "Pommes": "Salz", "Nudeln": "Mehl", "Steak": "Grill", "Eis": "Kugel",
   "Donut": "Loch", "Tacos": "Mexiko", "Ramen": "Suppe",
   "Croissant": "Butter", "Hot Dog": "Senf", "Popcorn": "Kino",
   "Chips": "Tüte", "Cupcake": "Glasur", "Brezeln": "Salz", "Spaghetti": "Soße",
-  // Orte
   "Paris": "Frankreich", "New York": "Wolkenkratzer", "Tokio": "Japan",
   "Sydney": "Australien", "Rom": "Italien", "Dubai": "Wüste",
   "Barcelona": "Spanien", "Malediven": "Insel", "Las Vegas": "Casino",
   "London": "Regen", "Berlin": "Hauptstadt", "Ägypten": "Pyramide",
   "Hawaii": "Vulkan", "Venedig": "Gondel", "Ibiza": "Feiern",
   "Amsterdam": "Kanal", "Prag": "Brücke", "Wien": "Walzer",
-  // Film & TV
   "Star Wars": "Raumschiff", "Titanic": "Eisberg", "Avatar": "Blau",
   "Friends": "Sofa", "Breaking Bad": "Chemie", "Harry Potter": "Magie",
   "Game of Thrones": "Drachen", "Avengers": "Superheld", "Joker": "Clown",
   "Matrix": "Simulation", "Inception": "Traum", "Squid Game": "Spiele",
   "Stranger Things": "Kinder", "Der Pate": "Mafia", "Pulp Fiction": "Gangster",
-  // Sport
   "Fußball": "Tor", "Tennis": "Schläger", "Boxen": "Ring",
   "Surfen": "Welle", "Skifahren": "Schnee", "Basketball": "Korb",
   "Golf": "Fairway", "Volleyball": "Netz", "Schwimmen": "Bahn",
   "Radfahren": "Pedal", "Kampfsport": "Gürtel", "Formel 1": "Rennstrecke",
   "Rugby": "Oval", "Baseball": "Handschuh",
-  // Party
   "Bier": "Hopfen", "Prosit": "Anstoßen", "Schnapsglas": "Klein",
   "Kater": "Kopfweh", "Bierpong": "Becher", "Freibier": "Gratis",
   "Gin Tonic": "Gurke", "Margarita": "Salz", "Cocktail": "Shaker",
@@ -90,40 +85,68 @@ function pickHint(w: string): string {
   return HILFSWÖRTER[w] ?? "???";
 }
 
+function getName(names: string[], i: number) {
+  return names[i]?.trim() || `Spieler ${i + 1}`;
+}
+
 type Phase = "setup" | "passing" | "playing" | "result";
 
 export default function ImposterPage() {
   const [phase, setPhase] = useState<Phase>("setup");
   const [playerCount, setPlayerCount] = useState(4);
+  const [playerNames, setPlayerNames] = useState<string[]>(Array(10).fill(""));
   const [kategorie, setKategorie] = useState<string | null>(null);
   const [word, setWord] = useState(() => pickWord(null));
-  const [imposterIndex, setImposterIndex] = useState(-1);
+  const [imposterIndices, setImposterIndices] = useState<number[]>([]);
   const [currentPlayer, setCurrentPlayer] = useState(0);
   const [showRole, setShowRole] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
   const [votedFor, setVotedFor] = useState<number | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
-  const [hintWord, setHintWord] = useState<string>("");
+  const [hintWord, setHintWord] = useState("");
+  const [scores, setScores] = useState<number[]>(Array(10).fill(0));
+  const [roundNumber, setRoundNumber] = useState(0);
 
   useEffect(() => {
     if (countdown === null) return;
-    if (countdown === 0) { setCountdown(null); return; }
+    if (countdown === 0) {
+      playCountdownEnd();
+      setCountdown(null);
+      return;
+    }
+    playTick();
     const t = setTimeout(() => setCountdown((c) => (c !== null ? c - 1 : null)), 1000);
     return () => clearTimeout(t);
   }, [countdown]);
+
+  const isCurrentImposter = imposterIndices.includes(currentPlayer);
+  const votedCorrectly = votedFor !== null && imposterIndices.includes(votedFor);
+  const twoImposters = playerCount >= 7;
 
   function kategorieWählen(k: string | null) {
     setKategorie(k);
     setWord(pickWord(k));
   }
 
+  function updateName(i: number, value: string) {
+    setPlayerNames((prev) => { const n = [...prev]; n[i] = value; return n; });
+  }
+
   function spielStarten() {
-    setImposterIndex(Math.floor(Math.random() * playerCount));
+    const count = twoImposters ? 2 : 1;
+    const pool = Array.from({ length: playerCount }, (_, i) => i);
+    const indices: number[] = [];
+    for (let i = 0; i < count; i++) {
+      const r = Math.floor(Math.random() * pool.length);
+      indices.push(...pool.splice(r, 1));
+    }
+    setImposterIndices(indices);
     setCurrentPlayer(0);
     setShowRole(false);
     setAcknowledged(false);
     setVotedFor(null);
     setHintWord(pickHint(word));
+    setRoundNumber((r) => r + 1);
     setCountdown(5);
     setPhase("passing");
   }
@@ -143,21 +166,40 @@ export default function ImposterPage() {
     }
   }
 
-  function neuesSpiel() {
-    setPhase("setup");
+  function auflösung() {
+    const correct = votedFor !== null && imposterIndices.includes(votedFor);
+    const newScores = [...scores];
+    if (correct) {
+      for (let i = 0; i < playerCount; i++) {
+        if (!imposterIndices.includes(i)) newScores[i]++;
+      }
+    } else {
+      for (const idx of imposterIndices) newScores[idx]++;
+    }
+    setScores(newScores);
+    correct ? playWin() : playLose();
+    setPhase("result");
+  }
+
+  function neueRunde() {
+    setWord(pickWord(kategorie));
     setVotedFor(null);
-    setImposterIndex(-1);
+    setImposterIndices([]);
     setCurrentPlayer(0);
     setShowRole(false);
     setAcknowledged(false);
-    setWord(pickWord(kategorie));
+    setPhase("setup");
   }
 
-  const isCurrentImposter = currentPlayer === imposterIndex;
-  const votedCorrectly = votedFor === imposterIndex;
+  function punkteZurücksetzen() {
+    setScores(Array(10).fill(0));
+    setRoundNumber(0);
+    neueRunde();
+  }
 
   // ── SETUP ──────────────────────────────────────────────────────────────────
   if (phase === "setup") {
+    const maxScore = Math.max(...scores.slice(0, playerCount), 1);
     return (
       <GameLayout
         title="Imposter"
@@ -165,10 +207,38 @@ export default function ImposterPage() {
         glowColor="rgba(239,68,68,0.10)"
       >
         <div className="flex flex-col gap-5 pb-2">
+
+          {/* Scoreboard – nach mind. 1 Runde */}
+          {roundNumber > 0 && (
+            <div className="relative overflow-hidden rounded-3xl border border-amber-500/20 bg-amber-950/20 backdrop-blur-xl p-5">
+              <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-amber-400 to-orange-500" />
+              <p className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-amber-500/70">
+                <Trophy className="h-3.5 w-3.5" /> Punkte nach Runde {roundNumber}
+              </p>
+              <div className="flex flex-col gap-2">
+                {Array.from({ length: playerCount }, (_, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <span className="w-24 truncate text-sm font-bold text-zinc-300">{getName(playerNames, i)}</span>
+                    <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
+                      <div
+                        className="h-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-500"
+                        style={{ width: `${(scores[i] / maxScore) * 100}%` }}
+                      />
+                    </div>
+                    <span className="w-5 text-right text-sm font-black text-amber-400">{scores[i]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Spieleranzahl */}
           <div className="rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] p-5">
             <p className="mb-4 text-xs font-black uppercase tracking-widest text-zinc-500">
               Spieleranzahl
+              {twoImposters && (
+                <span className="ml-2 font-black text-orange-400">→ 2 Imposter!</span>
+              )}
             </p>
             <div className="flex items-center justify-between gap-4">
               <button
@@ -187,11 +257,31 @@ export default function ImposterPage() {
             </div>
           </div>
 
+          {/* Spielernamen */}
+          <div className="rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] p-5">
+            <p className="mb-4 text-xs font-black uppercase tracking-widest text-zinc-500">Spielernamen</p>
+            <div className="flex flex-col gap-2">
+              {Array.from({ length: playerCount }, (_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 text-sm font-black text-zinc-400">
+                    {i + 1}
+                  </div>
+                  <input
+                    type="text"
+                    value={playerNames[i]}
+                    onChange={(e) => updateName(i, e.target.value)}
+                    placeholder={`Spieler ${i + 1}`}
+                    maxLength={15}
+                    className="flex-1 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-sm font-bold text-white placeholder-zinc-600 outline-none focus:border-red-500/40 focus:bg-white/[0.08]"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Kategorie */}
           <div>
-            <p className="mb-3 text-xs font-black uppercase tracking-widest text-zinc-500">
-              Kategorie
-            </p>
+            <p className="mb-3 text-xs font-black uppercase tracking-widest text-zinc-500">Kategorie</p>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => kategorieWählen(null)}
@@ -222,9 +312,7 @@ export default function ImposterPage() {
           {/* Wort-Vorschau */}
           <div className="relative overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-6">
             <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
-            <p className="mb-2 text-xs font-black uppercase tracking-widest text-zinc-500">
-              Geheimes Wort
-            </p>
+            <p className="mb-2 text-xs font-black uppercase tracking-widest text-zinc-500">Geheimes Wort</p>
             <p className="text-4xl font-black text-white">{word}</p>
             <button
               onClick={() => setWord(pickWord(kategorie))}
@@ -240,7 +328,7 @@ export default function ImposterPage() {
             className="flex w-full items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-red-500 to-orange-500 py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95"
           >
             <UserX className="h-5 w-5" />
-            Spiel starten
+            {roundNumber > 0 ? "Runde starten" : "Spiel starten"}
           </button>
         </div>
       </GameLayout>
@@ -258,7 +346,7 @@ export default function ImposterPage() {
         >
           <div className="flex flex-1 flex-col items-center justify-center gap-6 pb-2">
             <p className="text-xs font-black uppercase tracking-widest text-zinc-500">
-              Neue Runde startet in
+              Runde {roundNumber} startet in
             </p>
             <div className="relative flex h-48 w-48 items-center justify-center rounded-full border border-red-500/30 bg-red-950/40">
               <span className="text-9xl font-black text-white">{countdown}</span>
@@ -279,14 +367,13 @@ export default function ImposterPage() {
         <div className="flex flex-1 flex-col items-center gap-6 pb-2">
           <div className="text-center">
             <p className="text-lg font-black text-zinc-300">
-              Spieler {currentPlayer + 1} ist dran
+              {getName(playerNames, currentPlayer)} ist dran
             </p>
             <p className="mt-1 text-sm font-semibold text-zinc-500">
               Halte das Display verdeckt – nur du schaust!
             </p>
           </div>
 
-          {/* Role card */}
           <div className="w-full max-w-sm">
             {!showRole && !acknowledged && (
               <button
@@ -311,9 +398,7 @@ export default function ImposterPage() {
               >
                 <div
                   className={`absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r ${
-                    isCurrentImposter
-                      ? "from-red-500 to-orange-500"
-                      : "from-emerald-500 to-green-400"
+                    isCurrentImposter ? "from-red-500 to-orange-500" : "from-emerald-500 to-green-400"
                   }`}
                 />
                 {isCurrentImposter ? (
@@ -374,7 +459,7 @@ export default function ImposterPage() {
             >
               {currentPlayer + 1 >= playerCount
                 ? "Los geht's!"
-                : `Spieler ${currentPlayer + 2}`}
+                : getName(playerNames, currentPlayer + 1)}
               <ChevronRight className="h-5 w-5" />
             </button>
           )}
@@ -392,16 +477,16 @@ export default function ImposterPage() {
         glowColor="rgba(239,68,68,0.10)"
       >
         <div className="flex flex-1 flex-col gap-5 pb-2">
-          {/* Hinweis */}
           <div className="relative overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] p-6">
             <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
-            <p className="text-2xl font-black text-white mb-2">🕵️ Findet den Imposter!</p>
+            <p className="text-2xl font-black text-white mb-2">
+              🕵️ Findet {twoImposters ? "die Imposter!" : "den Imposter!"}
+            </p>
             <p className="text-sm font-semibold text-zinc-400">
               Redet abwechselnd über das Wort, ohne es direkt zu nennen. Wer klingt verdächtig?
             </p>
           </div>
 
-          {/* Abstimmen */}
           <div>
             <p className="mb-3 text-xs font-black uppercase tracking-widest text-zinc-500">
               Wen verdächtigt ihr?
@@ -425,7 +510,7 @@ export default function ImposterPage() {
                     {i + 1}
                   </div>
                   <span className={`font-black ${votedFor === i ? "text-white" : "text-zinc-300"}`}>
-                    Spieler {i + 1}
+                    {getName(playerNames, i)}
                   </span>
                   {votedFor === i && <span className="ml-auto text-red-400">🎯</span>}
                 </button>
@@ -434,7 +519,7 @@ export default function ImposterPage() {
           </div>
 
           <button
-            onClick={() => setPhase("result")}
+            onClick={auflösung}
             disabled={votedFor === null}
             className="flex w-full items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-red-500 to-orange-500 py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95 disabled:opacity-40"
           >
@@ -446,18 +531,21 @@ export default function ImposterPage() {
   }
 
   // ── RESULT ─────────────────────────────────────────────────────────────────
+  const imposterNames = imposterIndices.map((idx) => getName(playerNames, idx));
+  const mehrere = imposterIndices.length > 1;
+  const maxScore = Math.max(...scores.slice(0, playerCount), 1);
+
   return (
     <GameLayout
       title="Imposter"
       titleIcon={<UserX className="h-4 w-4 text-red-400" />}
       glowColor="rgba(239,68,68,0.10)"
     >
-      <div className="flex flex-1 flex-col items-center justify-center gap-6 pb-2">
+      <div className="flex flex-1 flex-col items-center gap-5 pb-2">
+        {/* Ergebnis */}
         <div
           className={`relative w-full max-w-sm overflow-hidden rounded-3xl border backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center ${
-            votedCorrectly
-              ? "border-emerald-500/50 bg-emerald-950/30"
-              : "border-red-500/50 bg-red-950/30"
+            votedCorrectly ? "border-emerald-500/50 bg-emerald-950/30" : "border-red-500/50 bg-red-950/30"
           }`}
         >
           <div
@@ -471,33 +559,68 @@ export default function ImposterPage() {
             <>
               <p className="text-3xl font-black text-emerald-300 mb-2">Richtig!</p>
               <p className="text-base font-bold text-zinc-400">
-                Spieler {imposterIndex + 1} war der Imposter – er muss trinken!
+                {getName(playerNames, votedFor!)} war {mehrere ? "ein" : "der"} Imposter – muss trinken!
               </p>
+              {mehrere && (
+                <p className="mt-1 text-sm text-zinc-500">
+                  Auch dabei: {imposterIndices.filter((i) => i !== votedFor).map((i) => getName(playerNames, i)).join(", ")}
+                </p>
+              )}
             </>
           ) : (
             <>
               <p className="text-3xl font-black text-red-300 mb-2">Falsch!</p>
               <p className="text-base font-bold text-zinc-400">
-                Spieler {imposterIndex + 1} war der echte Imposter – alle anderen trinken!
+                {imposterNames.join(" & ")} {mehrere ? "waren die echten Imposter" : "war der echte Imposter"} – alle anderen trinken!
               </p>
             </>
           )}
 
           <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.05] p-4">
-            <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-1">
-              Das Wort war
-            </p>
+            <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-1">Das Wort war</p>
             <p className="text-4xl font-black text-white">{word}</p>
           </div>
         </div>
 
-        <button
-          onClick={neuesSpiel}
-          className="flex w-full max-w-sm items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-red-500 to-orange-500 py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95"
-        >
-          <RotateCcw className="h-5 w-5" />
-          Neues Spiel
-        </button>
+        {/* Scoreboard */}
+        <div className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-amber-500/20 bg-amber-950/20 backdrop-blur-xl p-5">
+          <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-amber-400 to-orange-500" />
+          <p className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-amber-500/70">
+            <Trophy className="h-3.5 w-3.5" /> Punkte nach Runde {roundNumber}
+          </p>
+          <div className="flex flex-col gap-2">
+            {Array.from({ length: playerCount }, (_, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <span className="w-24 truncate text-sm font-bold text-zinc-300">{getName(playerNames, i)}</span>
+                <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
+                  <div
+                    className="h-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-500"
+                    style={{ width: `${(scores[i] / maxScore) * 100}%` }}
+                  />
+                </div>
+                <span className="w-5 text-right text-sm font-black text-amber-400">{scores[i]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex w-full max-w-sm flex-col gap-3">
+          <button
+            onClick={neueRunde}
+            className="flex w-full items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-red-500 to-orange-500 py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95"
+          >
+            <ChevronRight className="h-5 w-5" />
+            Neue Runde
+          </button>
+          <button
+            onClick={punkteZurücksetzen}
+            className="flex w-full items-center justify-center gap-2 rounded-3xl border border-white/10 bg-white/[0.05] py-4 text-base font-black text-zinc-400 transition-all active:scale-95"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Punkte zurücksetzen
+          </button>
+        </div>
       </div>
     </GameLayout>
   );

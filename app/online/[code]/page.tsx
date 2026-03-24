@@ -10,6 +10,7 @@ import {
 import { SkipForward } from "lucide-react";
 import GameLayout from "@/components/GameLayout";
 import { supabase, type Room } from "@/lib/supabase";
+import { playTick, playCountdownEnd, playWin, playLose, playReveal } from "@/lib/sounds";
 
 type PlayerInfo = { name: string; isHost: boolean; joinedAt: number };
 type GameId = "allgemein" | "wahrheit-oder-pflicht" | "ich-hab-noch-nie" | "wer-wuerde-eher" | "imposter";
@@ -107,7 +108,8 @@ export default function RoomPage() {
 
   useEffect(() => {
     if (countdown === null) return;
-    if (countdown === 0) { setCountdown(null); return; }
+    if (countdown === 0) { playCountdownEnd(); setCountdown(null); return; }
+    playTick();
     const t = setTimeout(() => setCountdown((c) => (c !== null ? c - 1 : null)), 1000);
     return () => clearTimeout(t);
   }, [countdown]);
@@ -117,6 +119,13 @@ export default function RoomPage() {
       const { data, error } = await supabase.from("rooms").select("*").eq("id", upperCode).single();
       if (error || !data) { setFehler("Raum nicht gefunden."); setPageLoading(false); return; }
       const r = data as Room;
+      // Auto-Cleanup: Räume älter als 24h löschen
+      if (Date.now() - new Date(r.created_at).getTime() > 24 * 60 * 60 * 1000) {
+        await supabase.from("rooms").delete().eq("id", upperCode);
+        setFehler("Dieser Raum ist abgelaufen. Bitte erstelle einen neuen Raum.");
+        setPageLoading(false);
+        return;
+      }
       setRoom(r); setCurrentCardText(r.current_card_text); setCurrentGame(r.current_game);
       setCurrentMeta(r.current_meta ?? {}); currentCardIdRef.current = r.current_card_id;
       const storedHostId = localStorage.getItem(`trinkspiel_host_${upperCode}`);
@@ -145,6 +154,17 @@ export default function RoomPage() {
       });
     return () => { supabase.removeChannel(channel); };
   }, [upperCode]);
+
+  // Sound bei Imposter-Auflösung
+  const prevRevealedRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (currentGame !== "imposter") { prevRevealedRef.current = undefined; return; }
+    if (prevRevealedRef.current === "false" && currentMeta.revealed === "true") {
+      const myN = typeof window !== "undefined" ? sessionStorage.getItem("trinkspiel_name") || "Anonym" : "Anonym";
+      currentMeta.imposterName === myN ? playReveal() : playWin();
+    }
+    prevRevealedRef.current = currentMeta.revealed;
+  }, [currentMeta.revealed, currentMeta.imposterName, currentGame]);
 
   const karteZiehen = useCallback(async (typ?: "wahrheit" | "pflicht") => {
     setIsLoading(true);
