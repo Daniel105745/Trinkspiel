@@ -91,6 +91,7 @@ export default function RoomPage() {
   const currentCardTextRef = useRef<string | null>(null);
   const playersRef = useRef<PlayerInfo[]>([]);
   const prevImposterWordRef = useRef<string | undefined>(undefined);
+  const lastSelectedPlayerRef = useRef<string>("");
 
   useEffect(() => { playersRef.current = players; }, [players]);
   useEffect(() => { currentCardTextRef.current = currentCardText; }, [currentCardText]);
@@ -199,6 +200,18 @@ export default function RoomPage() {
       const { data } = await q;
       if (data?.length) { const c = data[Math.floor(Math.random() * data.length)]; cardText = c.text; cardId = c.id; currentCardIdRef.current = c.id; }
     }
+    // Zufälligen Spieler auswählen (kein Doppelpick hintereinander)
+    if (currentGame !== "imposter" && currentGame !== "wer-wuerde-eher") {
+      const pl = playersRef.current;
+      if (pl.length >= 1) {
+        const last = lastSelectedPlayerRef.current;
+        const others = pl.filter((p) => p.name !== last);
+        const pool = others.length > 0 ? others : pl;
+        const chosen = pool[Math.floor(Math.random() * pool.length)];
+        lastSelectedPlayerRef.current = chosen.name;
+        meta = { ...meta, selectedPlayer: chosen.name };
+      }
+    }
     if (cardText) {
       await supabase.from("rooms").update({ current_card_id: cardId, current_card_text: cardText, current_meta: meta }).eq("id", upperCode);
       setCurrentCardText(cardText); setCurrentMeta(meta);
@@ -213,6 +226,7 @@ export default function RoomPage() {
   }, [currentMeta, upperCode]);
 
   async function spielWählen(gameId: GameId) {
+    lastSelectedPlayerRef.current = "";
     await supabase.from("rooms").update({ current_game: gameId, current_card_text: null, current_card_id: null, current_meta: {} }).eq("id", upperCode);
     setCurrentGame(gameId); setCurrentCardText(null); setCurrentMeta({}); currentCardIdRef.current = null;
   }
@@ -385,14 +399,6 @@ export default function RoomPage() {
           </button>
         )}
         <div className="flex flex-1 items-center justify-center py-4">
-          {currentGame === "wer-wuerde-eher" && currentMeta.player1 && (
-            <div className="mb-4 flex w-full max-w-sm items-center gap-3">
-              <div className="flex-1 rounded-2xl border border-emerald-800/40 bg-emerald-950/30 py-2.5 text-center"><p className="font-black text-emerald-200">{currentMeta.player1}</p></div>
-              <span className="font-black text-zinc-500">VS</span>
-              <div className="flex-1 rounded-2xl border border-emerald-800/40 bg-emerald-950/30 py-2.5 text-center"><p className="font-black text-emerald-200">{currentMeta.player2}</p></div>
-            </div>
-          )}
-
           {/* Imposter: personalized role card */}
           {currentGame === "imposter" ? (
             <div className="w-full max-w-sm">
@@ -460,6 +466,30 @@ export default function RoomPage() {
             <div className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)]">
               <div className={`absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r ${cardGradient}`} />
               <div className="p-6 pb-8 pt-7">
+                {/* Wer würde eher: VS-Anzeige oben in der Karte */}
+                {currentGame === "wer-wuerde-eher" && currentMeta.player1 && (
+                  <div className="mb-5 text-center">
+                    <p className="text-2xl font-black text-white leading-tight">
+                      {currentMeta.player1}{" "}
+                      <span className="text-lg text-zinc-500">vs</span>{" "}
+                      {currentMeta.player2}
+                    </p>
+                  </div>
+                )}
+
+                {/* Zufällig ausgewählter Spieler für alle anderen Spiele */}
+                {currentMeta.selectedPlayer && currentGame !== "wer-wuerde-eher" && (
+                  <div className="mb-4 flex justify-center">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.08] px-4 py-2">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500/30 text-xs font-black text-amber-300">
+                        {currentMeta.selectedPlayer[0]?.toUpperCase()}
+                      </div>
+                      <span className="font-black text-white text-sm">{currentMeta.selectedPlayer}</span>
+                      <span className="text-amber-400 text-xs font-black">ist dran!</span>
+                    </div>
+                  </div>
+                )}
+
                 {currentGame === "wahrheit-oder-pflicht" && currentMeta.typ && (
                   <span className={`mb-4 inline-block rounded-xl px-3 py-1 text-xs font-black uppercase tracking-widest ${currentMeta.typ === "wahrheit" ? "bg-violet-800/60 text-violet-200" : "bg-pink-900/60 text-pink-200"}`}>
                     {currentMeta.typ}
