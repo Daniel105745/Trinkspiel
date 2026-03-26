@@ -11,6 +11,7 @@ import { SkipForward } from "lucide-react";
 import GameLayout from "@/components/GameLayout";
 import { supabase, type Room } from "@/lib/supabase";
 import { playTick, playCountdownEnd, playWin, playLose, playReveal } from "@/lib/sounds";
+import { WAHRHEIT_18_PLUS, PFLICHT_18_PLUS, ICH_HAB_NOCH_NIE_18_PLUS, WER_WUERDE_EHER_18_PLUS } from "@/lib/fragenData";
 
 type PlayerInfo = { name: string; isHost: boolean; joinedAt: number };
 type GameId = "allgemein" | "wahrheit-oder-pflicht" | "ich-hab-noch-nie" | "wer-wuerde-eher" | "imposter";
@@ -92,8 +93,10 @@ export default function RoomPage() {
   const playersRef = useRef<PlayerInfo[]>([]);
   const prevImposterWordRef = useRef<string | undefined>(undefined);
   const lastSelectedPlayerRef = useRef<string>("");
+  const is18PlusRef = useRef(false);
 
   useEffect(() => { playersRef.current = players; }, [players]);
+  useEffect(() => { is18PlusRef.current = currentMeta.mode18Plus === "true"; }, [currentMeta.mode18Plus]);
   useEffect(() => { currentCardTextRef.current = currentCardText; }, [currentCardText]);
 
   // Countdown wenn neue Imposter-Runde startet
@@ -171,24 +174,24 @@ export default function RoomPage() {
 
   const karteZiehen = useCallback(async (typ?: "wahrheit" | "pflicht") => {
     setIsLoading(true);
+    const mode18Plus = is18PlusRef.current;
     let cardText: string | null = null, cardId: number | null = null, meta: Record<string, string> = {};
+
     if (currentGame === "imposter") {
       const w = IMPOSTER_WÖRTER[Math.floor(Math.random() * IMPOSTER_WÖRTER.length)];
       const pl = [...playersRef.current].sort(() => Math.random() - 0.5);
       const count = onlineImposterCountRef.current;
       const hint = IMPOSTER_HILFSWÖRTER[w] ?? "???";
-      meta = {
-        word: w,
-        imposterName: pl[0]?.name ?? "",
-        imposterName2: count >= 2 ? (pl[1]?.name ?? "") : "",
-        revealed: "false",
-        hintWord: hint,
-        imposterCount: String(count),
-      };
+      meta = { word: w, imposterName: pl[0]?.name ?? "", imposterName2: count >= 2 ? (pl[1]?.name ?? "") : "", revealed: "false", hintWord: hint, imposterCount: String(count) };
       cardText = "🕵️";
+
     } else if (currentGame === "ich-hab-noch-nie") {
-      const { data } = await supabase.from("ich_hab_noch_nie").select("id, text").neq("text", currentCardTextRef.current?.replace("Ich hab noch nie... ", "") ?? "").limit(10);
-      if (data?.length) { const c = data[Math.floor(Math.random() * data.length)]; cardText = `Ich hab noch nie... ${c.text}`; }
+      const prevText = currentCardTextRef.current?.replace("Ich hab noch nie... ", "") ?? "";
+      const { data } = await supabase.from("ich_hab_noch_nie").select("id, text").neq("text", prevText).limit(15);
+      const supaTexts = data?.map((c) => c.text) ?? [];
+      const pool = mode18Plus ? [...supaTexts, ...ICH_HAB_NOCH_NIE_18_PLUS.filter((t) => t !== prevText)] : supaTexts;
+      if (pool.length) { cardText = `Ich hab noch nie... ${pool[Math.floor(Math.random() * pool.length)]}`; }
+
     } else {
       let q = supabase.from("aufgaben").select("id, text, typ").neq("id", currentCardIdRef.current ?? 0).limit(15);
       if (currentGame === "wahrheit-oder-pflicht" && typ) { q = q.eq("typ", typ); meta = { typ }; }
@@ -197,9 +200,34 @@ export default function RoomPage() {
         const all = playersRef.current;
         if (all.length >= 2) { const s = [...all].sort(() => Math.random() - 0.5); meta = { player1: s[0].name, player2: s[1].name }; }
       } else { q = q.neq("typ", "buzzer"); }
+
       const { data } = await q;
-      if (data?.length) { const c = data[Math.floor(Math.random() * data.length)]; cardText = c.text; cardId = c.id; currentCardIdRef.current = c.id; }
+      const supaItems = data ?? [];
+
+      // Lokale 18+-Texte dazumischen
+      let localTexts: string[] = [];
+      if (mode18Plus) {
+        if (currentGame === "wahrheit-oder-pflicht" && typ === "wahrheit") localTexts = WAHRHEIT_18_PLUS;
+        else if (currentGame === "wahrheit-oder-pflicht" && typ === "pflicht") localTexts = PFLICHT_18_PLUS;
+        else if (currentGame === "wer-wuerde-eher") localTexts = WER_WUERDE_EHER_18_PLUS;
+        else localTexts = [...WAHRHEIT_18_PLUS, ...PFLICHT_18_PLUS, ...WER_WUERDE_EHER_18_PLUS];
+      }
+
+      const totalCount = supaItems.length + localTexts.length;
+      if (totalCount > 0) {
+        const idx = Math.floor(Math.random() * totalCount);
+        if (idx < supaItems.length) {
+          const c = supaItems[idx];
+          cardText = c.text; cardId = c.id; currentCardIdRef.current = c.id;
+        } else {
+          cardText = localTexts[idx - supaItems.length];
+        }
+      }
     }
+
+    // 18+-Modus-Flag in Meta weitertragen
+    if (mode18Plus) meta = { ...meta, mode18Plus: "true" };
+
     // Zufälligen Spieler auswählen (kein Doppelpick; nicht bei Imposter, Wer-würde-eher, Ich-hab-noch-nie)
     if (currentGame !== "imposter" && currentGame !== "wer-wuerde-eher" && currentGame !== "ich-hab-noch-nie") {
       const pl = playersRef.current;
@@ -212,6 +240,7 @@ export default function RoomPage() {
         meta = { ...meta, selectedPlayer: chosen.name };
       }
     }
+
     if (cardText) {
       await supabase.from("rooms").update({ current_card_id: cardId, current_card_text: cardText, current_meta: meta }).eq("id", upperCode);
       setCurrentCardText(cardText); setCurrentMeta(meta);
@@ -225,9 +254,18 @@ export default function RoomPage() {
     setCurrentMeta(newMeta);
   }, [currentMeta, upperCode]);
 
+  async function toggle18Plus() {
+    const active = currentMeta.mode18Plus === "true";
+    const newMeta = { ...currentMeta, mode18Plus: active ? "false" : "true" };
+    await supabase.from("rooms").update({ current_meta: newMeta }).eq("id", upperCode);
+    setCurrentMeta(newMeta);
+  }
+
   async function spielWählen(gameId: GameId) {
     lastSelectedPlayerRef.current = "";
     const initialMeta: Record<string, string> = {};
+    // 18+-Modus beibehalten beim Spielwechsel
+    if (currentMeta.mode18Plus === "true") initialMeta.mode18Plus = "true";
     // Startspieler random wählen (außer Imposter, Wer-würde-eher, Ich-hab-noch-nie)
     if (gameId !== "imposter" && gameId !== "wer-wuerde-eher" && gameId !== "ich-hab-noch-nie") {
       const pl = playersRef.current;
@@ -521,6 +559,26 @@ export default function RoomPage() {
           )}
         </div>
         <div className="flex flex-col gap-3 pb-2">
+          {/* 18+ Toggle – Host steuert, alle sehen Status */}
+          {currentGame !== "imposter" && (
+            <button
+              onClick={isHost ? toggle18Plus : undefined}
+              disabled={!isHost}
+              className={`
+                flex w-full items-center justify-center gap-2 rounded-2xl py-2.5 text-sm font-black transition-all
+                ${currentMeta.mode18Plus === "true"
+                  ? "border border-red-500/40 bg-red-950/60 text-red-300"
+                  : "border border-white/[0.10] bg-white/[0.04] text-zinc-500"
+                }
+                ${isHost ? "active:scale-95" : "cursor-default"}
+              `}
+            >
+              🔞 {currentMeta.mode18Plus === "true"
+                ? `18+ Modus aktiv${!isHost ? "" : " – Tap zum Deaktivieren"}`
+                : `18+ Modus${isHost ? " aktivieren" : " (inaktiv)"}`}
+            </button>
+          )}
+
           {isHost ? (
             currentGame === "imposter" ? (
               <div className="flex flex-col gap-3">
