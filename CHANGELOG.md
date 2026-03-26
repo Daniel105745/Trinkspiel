@@ -2,6 +2,48 @@
 
 ---
 
+## [2026-03-27] – Mobile-First Design-Überarbeitung (Design Loop)
+
+### ✅ Was wurde geändert
+
+**CSS Design-System (`app/globals.css`)**
+- CSS-Variablen hinzugefügt: `--bg`, `--card`, `--card-border`, `--text`, `--text-muted`, `--radius-card`, `--radius-btn`
+- Keyframe-Animationen: `slideUp` (Card-Entry), `popIn` (Bounce-Reveal), `shimmer` (Pulsing)
+- Utility-Klassen: `.card-animate`, `.pop-animate`, `.shimmer`
+
+**Alle 3 Spielkarten-Seiten**
+- Fragentext: `text-xl` → `text-[26px] font-black` (≥26px, 30% größer)
+- Haupt-Buttons: `py-4 text-base` → `py-[14px] text-lg` (~56px Höhe, ≥52px Pflicht erfüllt)
+- 18+ Toggle: `py-2.5 text-sm` → `py-3 text-base` (~44px Höhe)
+- Badge-Labels: `text-xs` → `text-sm`
+- Card-Container: `.card-animate` Klasse hinzugefügt (slideUp bei Kartenwechsel)
+- Swipe-Hinweis: `text-zinc-600` → `text-zinc-400` (besser bei schlechtem Licht)
+
+**Wer würde eher (`app/wer-wuerde-eher/page.tsx`)**
+- VS-Header Spielernamen: `text-2xl` → `text-[28px] font-black`
+
+**Online-Raum (`app/online/[code]/page.tsx`)**
+- Spieler-Banner Avatar: `h-16 w-16 text-3xl` → `h-20 w-20 text-4xl`
+- Spieler-Banner Name: `text-xl` → `text-[28px] font-black`
+- Spieler-Banner Badge: `text-xs` → `text-sm font-black`
+- Spieler-Banner Container: `.pop-animate` Klasse (Bounce-Effekt beim Reveal)
+- Kartenfragen im Online-Modus: `text-xl` → `text-[26px] font-black leading-snug`
+- Lobby Spielernamen-Liste: `font-bold text-white` → `text-xl font-black text-white`
+
+### 📁 Angefasste Dateien
+- `app/globals.css`
+- `app/wahrheit-oder-pflicht/page.tsx`
+- `app/ich-hab-noch-nie/page.tsx`
+- `app/wer-wuerde-eher/page.tsx`
+- `app/online/[code]/page.tsx`
+
+### 🔲 Offen / Geplant
+- Loading-State: "Lade Karten..." könnte `.shimmer`-Animation bekommen
+- CSS-Variablen noch nicht aktiv in Tailwind-Klassen genutzt (nur definiert)
+- Offline-Spiele nutzen noch eigene duplizierte Arrays statt `lib/fragenData.ts`
+
+---
+
 ## [2026-03-26] – Session 1 & 2 (Initiales Setup + Große Feature-Session)
 
 ### ✅ Was wurde geändert
