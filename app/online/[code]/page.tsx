@@ -45,12 +45,12 @@ const IMPOSTER_HILFSWÖRTER: Record<string, string> = {
   "Prosit": "Anstoßen", "Bierpong": "Becher",
 };
 
-const SPIELE: { id: GameId; label: string; desc: string; Icon: React.ElementType; iconGradient: string; cardBg: string; border: string }[] = [
-  { id: "allgemein",             label: "Freie Runde",          desc: "Alle Karten gemischt",         Icon: Beer,   iconGradient: "from-amber-400 to-orange-500",  cardBg: "bg-[#1a100b]", border: "border-amber-900/40" },
-  { id: "wahrheit-oder-pflicht", label: "Wahrheit oder Pflicht", desc: "Truth or Dare",                Icon: Eye,    iconGradient: "from-violet-500 to-purple-700", cardBg: "bg-[#1a0b2e]", border: "border-purple-900/40" },
-  { id: "ich-hab-noch-nie",      label: "Ich hab noch nie",     desc: "Never Have I Ever",            Icon: Zap,    iconGradient: "from-sky-400 to-blue-600",     cardBg: "bg-[#0b152e]", border: "border-blue-900/40" },
-  { id: "wer-wuerde-eher",       label: "Am ehesten würde...",  desc: "Most Likely To",               Icon: Users2, iconGradient: "from-green-400 to-emerald-600", cardBg: "bg-[#0b200f]", border: "border-green-900/40" },
-  { id: "imposter",              label: "Imposter",             desc: "Wer ist der Verräter?",        Icon: UserX,  iconGradient: "from-red-500 to-orange-600",    cardBg: "bg-[#200b0b]", border: "border-red-900/40" },
+const SPIELE: { id: GameId; label: string; desc: string; Icon: React.ElementType; iconGradient: string; cardGradient: string; border: string }[] = [
+  { id: "allgemein",             label: "Freie Runde",          desc: "Alle Karten gemischt",         Icon: Beer,   iconGradient: "from-amber-400 to-orange-500",  cardGradient: "from-amber-900/40 to-orange-950/30",  border: "border-amber-500/20" },
+  { id: "wahrheit-oder-pflicht", label: "Wahrheit oder Pflicht", desc: "Truth or Dare",               Icon: Eye,    iconGradient: "from-violet-500 to-purple-700", cardGradient: "from-purple-900/50 to-purple-950/30", border: "border-purple-500/20" },
+  { id: "ich-hab-noch-nie",      label: "Ich hab noch nie",     desc: "Never Have I Ever",            Icon: Zap,    iconGradient: "from-sky-400 to-blue-600",     cardGradient: "from-sky-900/50 to-blue-950/30",      border: "border-sky-500/20" },
+  { id: "wer-wuerde-eher",       label: "Am ehesten würde...",  desc: "Most Likely To",               Icon: Users2, iconGradient: "from-green-400 to-emerald-600", cardGradient: "from-green-900/50 to-emerald-950/30", border: "border-green-500/20" },
+  { id: "imposter",              label: "Imposter",             desc: "Wer ist der Verräter?",        Icon: UserX,  iconGradient: "from-red-500 to-orange-600",    cardGradient: "from-red-900/50 to-red-950/30",       border: "border-red-500/20" },
 ];
 
 function getUserId() {
@@ -84,6 +84,8 @@ export default function RoomPage() {
   const [copied, setCopied] = useState(false);
 
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [imposterPickerOpen, setImposterPickerOpen] = useState(false);
+  const onlineImposterCountRef = useRef<1 | 2>(1);
 
   const currentCardIdRef = useRef<number | null>(null);
   const currentCardTextRef = useRef<string | null>(null);
@@ -171,10 +173,17 @@ export default function RoomPage() {
     let cardText: string | null = null, cardId: number | null = null, meta: Record<string, string> = {};
     if (currentGame === "imposter") {
       const w = IMPOSTER_WÖRTER[Math.floor(Math.random() * IMPOSTER_WÖRTER.length)];
-      const pl = playersRef.current;
-      const imp = pl.length > 0 ? pl[Math.floor(Math.random() * pl.length)] : null;
+      const pl = [...playersRef.current].sort(() => Math.random() - 0.5);
+      const count = onlineImposterCountRef.current;
       const hint = IMPOSTER_HILFSWÖRTER[w] ?? "???";
-      meta = { word: w, imposterName: imp?.name ?? "", revealed: "false", hintWord: hint };
+      meta = {
+        word: w,
+        imposterName: pl[0]?.name ?? "",
+        imposterName2: count >= 2 ? (pl[1]?.name ?? "") : "",
+        revealed: "false",
+        hintWord: hint,
+        imposterCount: String(count),
+      };
       cardText = "🕵️";
     } else if (currentGame === "ich-hab-noch-nie") {
       const { data } = await supabase.from("ich_hab_noch_nie").select("id, text").neq("text", currentCardTextRef.current?.replace("Ich hab noch nie... ", "") ?? "").limit(10);
@@ -263,6 +272,7 @@ export default function RoomPage() {
 
   // ── Lobby ─────────────────────────────────────────────────────────────────
   if (!currentGame) return (
+    <>
     <GameLayout title="Lobby" titleIcon={<Globe className="h-4 w-4 text-sky-400" />} glowColor="rgba(14,165,233,0.10)">
       <div className="flex flex-col gap-5">
         {RoomHeader}
@@ -283,9 +293,15 @@ export default function RoomPage() {
           <div>
             <p className="mb-3 text-xs font-black uppercase tracking-widest text-zinc-500">Spiel auswählen</p>
             <div className="grid grid-cols-2 gap-3">
-              {SPIELE.map(({ id, label, desc, Icon, iconGradient, cardBg, border }) => (
-                <button key={id} onClick={() => spielWählen(id)} className={`flex flex-col rounded-3xl border p-4 text-left transition-all active:scale-95 ${cardBg} ${border}`}>
-                  <div className={`mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${iconGradient}`}><Icon className="h-5 w-5 text-white" /></div>
+              {SPIELE.map(({ id, label, desc, Icon, iconGradient, cardGradient, border }) => (
+                <button
+                  key={id}
+                  onClick={() => id === "imposter" ? setImposterPickerOpen(true) : spielWählen(id)}
+                  className={`group flex min-h-[150px] flex-col rounded-3xl border p-4 text-left bg-gradient-to-br ${cardGradient} ${border} backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.3)] transition-all duration-200 active:scale-95`}
+                >
+                  <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${iconGradient} shadow-lg`}>
+                    <Icon className="h-6 w-6 text-white" />
+                  </div>
                   <p className="text-sm font-black text-white leading-snug">{label}</p>
                   <p className="mt-1 text-xs font-semibold text-zinc-400">{desc}</p>
                 </button>
@@ -300,6 +316,47 @@ export default function RoomPage() {
         )}
       </div>
     </GameLayout>
+
+    {/* Imposter-Picker */}
+    {imposterPickerOpen && (
+      <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm">
+        <div className="w-full max-w-sm rounded-t-3xl border-t border-white/10 bg-zinc-950 p-6 pb-10">
+          <div className="mb-1 flex justify-center">
+            <div className="h-1 w-10 rounded-full bg-white/20" />
+          </div>
+          <p className="mb-6 mt-4 text-center text-xl font-black text-white">Wie viele Imposter?</p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => { onlineImposterCountRef.current = 1; setImposterPickerOpen(false); spielWählen("imposter"); }}
+              className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.05] p-5 text-left transition-all active:scale-95"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/20 text-2xl">🕵️</div>
+              <div>
+                <p className="font-black text-white">1 Imposter</p>
+                <p className="text-sm text-zinc-500">Klassisch</p>
+              </div>
+            </button>
+            <button
+              onClick={() => { onlineImposterCountRef.current = 2; setImposterPickerOpen(false); spielWählen("imposter"); }}
+              className="flex items-center gap-4 rounded-2xl border border-red-500/30 bg-red-950/30 p-5 text-left transition-all active:scale-95"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/20 text-2xl">🕵️🕵️</div>
+              <div>
+                <p className="font-black text-white">2 Imposter</p>
+                <p className="text-sm text-zinc-500">Mehr Chaos</p>
+              </div>
+            </button>
+            <button
+              onClick={() => setImposterPickerOpen(false)}
+              className="mt-1 rounded-2xl border border-white/10 bg-white/[0.05] py-3 font-black text-zinc-500 transition-all active:scale-95"
+            >
+              Abbrechen
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 
   // ── Spiel ─────────────────────────────────────────────────────────────────
@@ -314,8 +371,9 @@ export default function RoomPage() {
 
   // Imposter: personalized role display
   const myName = typeof window !== "undefined" ? sessionStorage.getItem("trinkspiel_name") || "Anonym" : "Anonym";
-  const isImposter = currentGame === "imposter" && currentMeta.imposterName === myName;
+  const isImposter = currentGame === "imposter" && (currentMeta.imposterName === myName || (!!currentMeta.imposterName2 && currentMeta.imposterName2 === myName));
   const imposterRevealed = currentMeta.revealed === "true";
+  const twoImpostersOnline = currentMeta.imposterCount === "2";
 
   return (
     <GameLayout title={aktivesSpiel?.label ?? "Spiel"} titleIcon={aktivesSpiel ? <aktivesSpiel.Icon className="h-4 w-4 text-zinc-300" /> : undefined} glowColor="rgba(124,58,237,0.10)">
@@ -364,14 +422,16 @@ export default function RoomPage() {
                   <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-2">Auflösung</p>
                   <p className="text-sm font-bold text-zinc-400 mb-1">Das Wort war</p>
                   <p className="text-4xl font-black text-white mb-4">{currentMeta.word}</p>
-                  <p className="text-sm font-bold text-zinc-400 mb-1">Der Imposter war</p>
-                  <p className="text-2xl font-black text-red-400">{currentMeta.imposterName} 🕵️</p>
+                  <p className="text-sm font-bold text-zinc-400 mb-1">{twoImpostersOnline ? "Die Imposter waren" : "Der Imposter war"}</p>
+                  <p className="text-2xl font-black text-red-400">
+                    {currentMeta.imposterName}{twoImpostersOnline && currentMeta.imposterName2 ? ` & ${currentMeta.imposterName2}` : ""} 🕵️
+                  </p>
                 </div>
               ) : isImposter ? (
                 <div className="relative overflow-hidden rounded-3xl border border-red-500/50 bg-red-950/40 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center">
                   <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
                   <div className="text-6xl mb-4">🕵️</div>
-                  <p className="text-2xl font-black text-red-400 mb-1">Du bist der</p>
+                  <p className="text-2xl font-black text-red-400 mb-1">Du bist {twoImpostersOnline ? "ein" : "der"}</p>
                   <p className="text-5xl font-black text-red-300">IMPOSTER!</p>
                   {currentMeta.hintWord && (
                     <div className="mt-5 rounded-2xl border border-red-500/20 bg-red-500/10 px-5 py-3">
