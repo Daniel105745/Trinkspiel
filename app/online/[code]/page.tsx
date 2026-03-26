@@ -346,7 +346,7 @@ export default function RoomPage() {
               : players.map((p, i) => (
                 <div key={i} className="flex items-center gap-3 rounded-2xl bg-white/[0.04] px-3 py-2.5">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-sm font-black text-white">{p.name[0]?.toUpperCase()}</div>
-                  <span className="flex-1 font-bold text-white">{p.name}</span>
+                  <span className="flex-1 text-xl font-black text-white">{p.name}</span>
                   {p.isHost && <div className="flex items-center gap-1 rounded-full bg-amber-950/60 px-2 py-0.5"><Crown className="h-3 w-3 text-amber-400" /><span className="text-xs font-black text-amber-400">Host</span></div>}
                 </div>
               ))}
@@ -449,12 +449,12 @@ export default function RoomPage() {
         )}
         {/* Startspieler-Banner – prominent über der Karte */}
         {currentMeta.selectedPlayer && currentGame !== "wer-wuerde-eher" && currentGame !== "ich-hab-noch-nie" && currentGame !== "imposter" && (
-          <div className="mb-4 flex flex-col items-center gap-1.5">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-[0_0_24px_rgba(251,191,36,0.45)] text-3xl font-black text-white">
+          <div className="pop-animate mb-4 flex flex-col items-center gap-1.5">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-[0_0_24px_rgba(251,191,36,0.45)] text-4xl font-black text-white">
               {currentMeta.selectedPlayer[0]?.toUpperCase()}
             </div>
-            <p className="text-xl font-black text-white">{currentMeta.selectedPlayer}</p>
-            <span className="rounded-full bg-amber-500/20 border border-amber-500/30 px-3 py-0.5 text-xs font-black uppercase tracking-widest text-amber-400">
+            <p className="text-[28px] font-black text-white">{currentMeta.selectedPlayer}</p>
+            <span className="rounded-full bg-amber-500/20 border border-amber-500/30 px-3 py-0.5 text-sm font-black uppercase tracking-widest text-amber-400">
               {currentMeta.isStart === "true" ? "🎲 fängt an!" : "🎯 ist dran!"}
             </span>
           </div>
@@ -545,7 +545,7 @@ export default function RoomPage() {
                   </span>
                 )}
                 {currentCardText ? (
-                  <p className="mt-4 text-center text-xl font-black text-white leading-snug">{currentCardText}</p>
+                  <p className="mt-4 text-center text-[26px] font-black text-white leading-snug">{currentCardText}</p>
                 ) : (
                   <div className="py-10 text-center">
                     <div className="mb-3 text-4xl">{aktivesSpiel?.id === "ich-hab-noch-nie" ? "🙊" : aktivesSpiel?.id === "wahrheit-oder-pflicht" ? "🔥" : aktivesSpiel?.id === "wer-wuerde-eher" ? "🤷" : "🎲"}</div>

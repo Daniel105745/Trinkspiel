@@ -156,6 +156,7 @@ export default function IchHabNochNie() {
               {...swipeHandlers}
               style={{ touchAction: "pan-y" }}
               className="
+                card-animate
                 relative w-full max-w-sm overflow-hidden rounded-3xl
                 border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl
                 shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)]
@@ -164,11 +165,11 @@ export default function IchHabNochNie() {
             >
               <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-sky-400 to-cyan-400" />
               <div className="p-6 pb-8 pt-7">
-                <span className="inline-block rounded-xl bg-sky-900/60 px-3 py-1 text-xs font-black uppercase tracking-widest text-sky-300">
+                <span className="inline-block rounded-xl bg-sky-900/60 px-3 py-1 text-sm font-black uppercase tracking-widest text-sky-300">
                   Sozial
                 </span>
                 <div className="my-8 text-center text-6xl">🙊</div>
-                <p className="text-center text-xl font-black text-white leading-snug">
+                <p className="text-center text-[26px] font-black text-white leading-snug">
                   Ich hab noch nie... {card.text}
                 </p>
                 {schonGetan && (
@@ -176,7 +177,7 @@ export default function IchHabNochNie() {
                     🍺 {card.schon_getan_count + 1} haben das schon getan!
                   </p>
                 )}
-                <p className="mt-10 text-center text-xs font-semibold text-zinc-600">
+                <p className="mt-10 text-center text-xs font-semibold text-zinc-400">
                   ← Swipe für nächste Karte →
                 </p>
               </div>
@@ -190,7 +191,7 @@ export default function IchHabNochNie() {
             onClick={() => setModus((m) => (m === "normal" ? "18+" : "normal"))}
             className={`
               flex w-full items-center justify-center gap-2
-              rounded-2xl py-2.5 text-sm font-black transition-all active:scale-95
+              rounded-2xl py-3 text-base font-black transition-all active:scale-95
               ${modus === "18+"
                 ? "border border-red-500/40 bg-red-950/60 text-red-300"
                 : "border border-white/[0.10] bg-white/[0.04] text-zinc-500"
@@ -207,7 +208,7 @@ export default function IchHabNochNie() {
               disabled={schonGetan}
               className={`
                 flex flex-1 items-center justify-center gap-2
-                rounded-2xl py-4 font-black text-base text-amber-300
+                rounded-2xl py-[14px] font-black text-lg text-amber-300
                 border border-amber-900/50
                 transition-all active:scale-95 disabled:opacity-50
                 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
@@ -222,7 +223,7 @@ export default function IchHabNochNie() {
               className="
                 flex flex-1 items-center justify-center gap-2
                 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400
-                py-4 text-base font-black text-white
+                py-[14px] text-lg font-black text-white
                 shadow-[0_0_20px_rgba(14,165,233,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]
                 transition-all active:scale-95
               "

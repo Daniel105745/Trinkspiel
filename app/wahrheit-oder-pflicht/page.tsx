@@ -193,6 +193,7 @@ export default function WahrheitOderPflicht() {
               {...swipeHandlers}
               style={{ touchAction: "pan-y" }}
               className="
+                card-animate
                 relative w-full max-w-sm overflow-hidden rounded-3xl
                 border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl
                 shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)]
@@ -204,7 +205,7 @@ export default function WahrheitOderPflicht() {
 
               <div className="p-6 pb-8 pt-7">
                 <span
-                  className={`inline-block rounded-xl px-3 py-1 text-xs font-black uppercase tracking-widest ${
+                  className={`inline-block rounded-xl px-3 py-1 text-sm font-black uppercase tracking-widest ${
                     isWahrheit
                       ? "bg-violet-800/60 text-violet-200"
                       : "bg-pink-900/60 text-pink-200"
@@ -217,11 +218,11 @@ export default function WahrheitOderPflicht() {
                   {EMOJIS[card.typ] ?? "🎲"}
                 </div>
 
-                <p className="text-center text-xl font-black text-white leading-snug">
+                <p className="text-center text-[26px] font-black text-white leading-snug">
                   {card.text}
                 </p>
 
-                <p className="mt-10 text-center text-xs font-semibold text-zinc-600">
+                <p className="mt-10 text-center text-xs font-semibold text-zinc-400">
                   ← Swipe für nächste Karte →
                 </p>
               </div>
@@ -234,7 +235,7 @@ export default function WahrheitOderPflicht() {
           onClick={toggleModus}
           className={`
             mb-3 flex w-full items-center justify-center gap-2
-            rounded-2xl py-2.5 text-sm font-black transition-all active:scale-95
+            rounded-2xl py-3 text-base font-black transition-all active:scale-95
             ${modus === "18+"
               ? "border border-red-500/40 bg-red-950/60 text-red-300"
               : "border border-white/[0.10] bg-white/[0.04] text-zinc-500"
@@ -250,7 +251,7 @@ export default function WahrheitOderPflicht() {
             onClick={trinken}
             className={`
               flex flex-1 items-center justify-center gap-2
-              rounded-2xl py-4 font-black text-base text-amber-300
+              rounded-2xl py-[14px] font-black text-lg text-amber-300
               border border-amber-900/50
               transition-all active:scale-95
               ${trinkenFlash ? "bg-amber-800/80" : "bg-amber-950/80"}
@@ -265,7 +266,7 @@ export default function WahrheitOderPflicht() {
             className="
               flex flex-1 items-center justify-center gap-2
               rounded-2xl bg-gradient-to-r from-violet-600 to-pink-500
-              py-4 text-base font-black text-white
+              py-[14px] text-lg font-black text-white
               shadow-[0_0_20px_rgba(139,92,246,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]
               transition-all active:scale-95
             "

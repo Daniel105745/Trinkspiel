@@ -4,6 +4,36 @@
   --font-sans: var(--font-nunito);
 }
 
+/* CSS Design-System Variablen */
+:root {
+  --bg: #0a0b14;
+  --card: rgba(255,255,255,0.06);
+  --card-border: rgba(255,255,255,0.12);
+  --text: #f0f0f8;
+  --text-muted: #6b7280;
+  --radius-card: 24px;
+  --radius-btn: 16px;
+}
+
+/* Karten-Slide-Animation */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes popIn {
+  0%   { opacity: 0; transform: scale(0.88); }
+  70%  { transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes shimmer {
+  0%   { opacity: 0.6; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+.card-animate { animation: slideUp 0.28s ease-out both; }
+.pop-animate  { animation: popIn  0.32s ease-out both; }
+.shimmer      { animation: shimmer 1.8s ease-in-out infinite; }
+
 body {
   background: #0d0f1e;
   color: white;
