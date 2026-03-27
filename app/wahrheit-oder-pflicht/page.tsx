@@ -32,18 +32,19 @@ export default function WahrheitOderPflicht() {
   const [modus, setModus] = useState<"normal" | "18+">("normal");
 
   useEffect(() => {
-    supabase
-      .from("aufgaben")
-      .select("id, text, typ")
-      .in("typ", ["wahrheit", "pflicht"])
-      .then(({ data, error }) => {
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("aufgaben")
+          .select("id, text, typ")
+          .in("typ", ["wahrheit", "pflicht"]);
         if (!error) setSupabaseCards((data as Aufgabe[]) ?? []);
-        setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Supabase Fetch Fehler:", err);
+      } finally {
         setLoading(false);
-      });
+      }
+    })();
   }, []);
 
   useEffect(() => {

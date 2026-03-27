@@ -30,17 +30,18 @@ export default function IchHabNochNie() {
   const [modus, setModus] = useState<"normal" | "18+">("normal");
 
   useEffect(() => {
-    supabase
-      .from("ich_hab_noch_nie")
-      .select("id, text, schon_getan_count, noch_nie_count")
-      .then(({ data, error }) => {
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("ich_hab_noch_nie")
+          .select("id, text, schon_getan_count, noch_nie_count");
         if (!error) setSupabaseCards((data as IchHabNochNie[]) ?? []);
-        setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Supabase Fetch Fehler:", err);
+      } finally {
         setLoading(false);
-      });
+      }
+    })();
   }, []);
 
   useEffect(() => {
