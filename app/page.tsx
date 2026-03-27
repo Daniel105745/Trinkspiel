@@ -83,7 +83,7 @@ export default function Home() {
               backdrop-blur-xl
               shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.3)]
               transition-all duration-200
-              hover:bg-white/[0.08] active:scale-95
+              hover:bg-white/[0.08] active:scale-[0.97]
             `}
           >
             <div
@@ -91,8 +91,8 @@ export default function Home() {
             >
               <Icon className="h-6 w-6 text-white" />
             </div>
-            <p className="text-base font-black text-white leading-tight">{title}</p>
-            <p className="mt-1 text-sm font-semibold text-zinc-400">{subtitle}</p>
+            <p className="text-[18px] font-black text-white leading-tight">{title}</p>
+            <p className="mt-1 text-[18px] font-semibold text-zinc-400">{subtitle}</p>
           </Link>
         ))}
       </div>
@@ -100,7 +100,7 @@ export default function Home() {
       {/* ODER Divider */}
       <div className="relative z-10 my-7 flex w-full max-w-sm items-center gap-4">
         <div className="h-px flex-1 bg-white/10" />
-        <span className="text-xs font-black tracking-[0.3em] text-zinc-500">ODER</span>
+        <span className="text-[18px] font-black tracking-[0.3em] text-zinc-400">ODER</span>
         <div className="h-px flex-1 bg-white/10" />
       </div>
 
@@ -112,7 +112,7 @@ export default function Home() {
             bg-gradient-to-r from-sky-400 to-cyan-300
             py-5 text-xl font-black text-white
             shadow-[0_0_30px_rgba(6,182,212,0.45),0_4px_20px_rgba(0,0,0,0.3)]
-            transition-all duration-200 active:scale-95 hover:shadow-[0_0_40px_rgba(6,182,212,0.6)]
+            transition-all duration-200 active:scale-[0.97] hover:shadow-[0_0_40px_rgba(6,182,212,0.6)]
           "
         >
           <Globe className="h-6 w-6" />
@@ -121,7 +121,7 @@ export default function Home() {
       </Link>
 
       {/* Footer */}
-      <p className="relative z-10 mt-8 mb-2 text-center text-sm font-semibold text-zinc-600">
+      <p className="relative z-10 mt-8 mb-2 text-center text-[18px] font-semibold text-zinc-400">
         Nur für Personen ab 18 Jahren 🔞
       </p>
     </main>

@@ -73,7 +73,7 @@ export default function OnlineLobby() {
           </div>
           <div className="text-center">
             <h2 className="text-2xl font-black text-white">Wie heißt du?</h2>
-            <p className="mt-1 text-sm font-semibold text-zinc-400">
+            <p className="mt-1 text-[18px] font-semibold text-zinc-400">
               Dein Name wird allen Mitspielern angezeigt
             </p>
           </div>
@@ -90,7 +90,7 @@ export default function OnlineLobby() {
           <button
             onClick={nameBestaetigen}
             disabled={!name.trim()}
-            className="flex w-full max-w-sm items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-sky-400 to-cyan-300 py-5 text-xl font-black text-white shadow-lg shadow-sky-900/40 transition-all active:scale-95 disabled:opacity-40"
+            className="flex w-full max-w-sm items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-sky-400 to-cyan-300 py-5 text-xl font-black text-white shadow-lg shadow-sky-900/40 transition-all active:scale-[0.97] disabled:opacity-40"
           >
             Weiter <ArrowRight className="h-5 w-5" />
           </button>
@@ -110,12 +110,12 @@ export default function OnlineLobby() {
         {/* Name Badge */}
         <div className="flex items-center justify-between rounded-2xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-900/60 text-sm font-black text-sky-300">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-900/60 text-[18px] font-black text-sky-300">
               {name.trim()[0]?.toUpperCase()}
             </div>
-            <span className="font-black text-white">{name.trim()}</span>
+            <span className="text-[18px] font-black text-white">{name.trim()}</span>
           </div>
-          <button onClick={() => setStep("name")} className="text-xs font-bold text-zinc-500 hover:text-zinc-300 transition-colors">
+          <button onClick={() => setStep("name")} className="min-h-[52px] px-3 text-[18px] font-bold text-zinc-400 hover:text-zinc-200 active:text-zinc-200 transition-colors">
             Ändern
           </button>
         </div>
@@ -123,7 +123,7 @@ export default function OnlineLobby() {
         {fehler && (
           <div className="flex items-start gap-3 rounded-2xl border border-red-800 bg-red-950/50 p-4">
             <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
-            <p className="text-sm font-bold text-red-300">{fehler}</p>
+            <p className="text-[18px] font-bold text-red-300">{fehler}</p>
           </div>
         )}
 
@@ -134,14 +134,14 @@ export default function OnlineLobby() {
               <Plus className="h-6 w-6 text-white" />
             </div>
             <div className="text-left">
-              <p className="font-black text-white">Raum erstellen</p>
-              <p className="text-sm font-semibold text-zinc-400">Du bist der Host und wählst das Spiel</p>
+              <p className="text-[18px] font-black text-white">Raum erstellen</p>
+              <p className="text-[18px] font-semibold text-zinc-400">Du bist der Host und wählst das Spiel</p>
             </div>
           </button>
           {mode === "create" && (
             <div className="border-t border-white/[0.06] p-5 pt-4">
-              <p className="mb-4 text-sm font-semibold text-zinc-400">Ein 4-stelliger Code wird generiert — teile ihn mit deinen Freunden.</p>
-              <button onClick={raumErstellen} disabled={isLoading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-400 to-cyan-300 py-4 text-lg font-black text-white shadow-[0_0_20px_rgba(14,165,233,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95 disabled:opacity-60">
+              <p className="mb-4 text-[18px] font-semibold text-zinc-400">Ein 4-stelliger Code wird generiert — teile ihn mit deinen Freunden.</p>
+              <button onClick={raumErstellen} disabled={isLoading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-400 to-cyan-300 py-4 text-lg font-black text-white shadow-[0_0_20px_rgba(14,165,233,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-[0.97] disabled:opacity-60">
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Globe className="h-5 w-5" />}
                 Raum erstellen
               </button>
@@ -156,8 +156,8 @@ export default function OnlineLobby() {
               <LogIn className="h-6 w-6 text-zinc-300" />
             </div>
             <div className="text-left">
-              <p className="font-black text-white">Raum beitreten</p>
-              <p className="text-sm font-semibold text-zinc-400">Code vom Host eingeben</p>
+              <p className="text-[18px] font-black text-white">Raum beitreten</p>
+              <p className="text-[18px] font-semibold text-zinc-400">Code vom Host eingeben</p>
             </div>
           </button>
           {mode === "join" && (
@@ -171,7 +171,7 @@ export default function OnlineLobby() {
                 maxLength={4}
                 className="mb-4 w-full rounded-2xl border border-white/[0.08] bg-white/[0.05] px-4 py-3 text-center text-2xl font-black uppercase tracking-widest text-white placeholder-zinc-600 outline-none focus:ring-2 focus:ring-white/30"
               />
-              <button onClick={raumBeitreten} disabled={isLoading || joinCode.length !== 4} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-4 text-lg font-black text-zinc-950 transition-all active:scale-95 disabled:opacity-40">
+              <button onClick={raumBeitreten} disabled={isLoading || joinCode.length !== 4} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-4 text-lg font-black text-zinc-950 transition-all active:scale-[0.97] disabled:opacity-40">
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogIn className="h-5 w-5" />}
                 Beitreten
               </button>

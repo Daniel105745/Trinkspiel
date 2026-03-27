@@ -3,11 +3,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  RefreshCw, Users, Copy, Check, Crown, AlertCircle,
-  Loader2, LogOut, Beer, Scale, Hand, ChevronLeft,
-  HelpCircle, Flame, Globe, Eye, Zap, Users2, Radio, UserX,
+  Users, Copy, Check, Crown, AlertCircle,
+  Loader2, LogOut, Beer, ChevronLeft,
+  HelpCircle, Flame, Globe, Eye, Zap, Users2, UserX, SkipForward,
 } from "lucide-react";
-import { SkipForward } from "lucide-react";
 import GameLayout from "@/components/GameLayout";
 import { supabase, type Room } from "@/lib/supabase";
 import { playTick, playCountdownEnd, playWin, playLose, playReveal } from "@/lib/sounds";
@@ -177,88 +176,102 @@ export default function RoomPage() {
     const mode18Plus = is18PlusRef.current;
     let cardText: string | null = null, cardId: number | null = null, meta: Record<string, string> = {};
 
-    if (currentGame === "imposter") {
-      const w = IMPOSTER_WÖRTER[Math.floor(Math.random() * IMPOSTER_WÖRTER.length)];
-      const pl = [...playersRef.current].sort(() => Math.random() - 0.5);
-      const count = onlineImposterCountRef.current;
-      const hint = IMPOSTER_HILFSWÖRTER[w] ?? "???";
-      meta = { word: w, imposterName: pl[0]?.name ?? "", imposterName2: count >= 2 ? (pl[1]?.name ?? "") : "", revealed: "false", hintWord: hint, imposterCount: String(count) };
-      cardText = "🕵️";
+    try {
+      if (currentGame === "imposter") {
+        const w = IMPOSTER_WÖRTER[Math.floor(Math.random() * IMPOSTER_WÖRTER.length)];
+        const pl = [...playersRef.current].sort(() => Math.random() - 0.5);
+        const count = onlineImposterCountRef.current;
+        const hint = IMPOSTER_HILFSWÖRTER[w] ?? "???";
+        meta = { word: w, imposterName: pl[0]?.name ?? "", imposterName2: count >= 2 ? (pl[1]?.name ?? "") : "", revealed: "false", hintWord: hint, imposterCount: String(count) };
+        cardText = "🕵️";
 
-    } else if (currentGame === "ich-hab-noch-nie") {
-      const prevText = currentCardTextRef.current?.replace("Ich hab noch nie... ", "") ?? "";
-      const { data } = await supabase.from("ich_hab_noch_nie").select("id, text").neq("text", prevText).limit(15);
-      const supaTexts = data?.map((c) => c.text) ?? [];
-      const pool = mode18Plus ? [...supaTexts, ...ICH_HAB_NOCH_NIE_18_PLUS.filter((t) => t !== prevText)] : supaTexts;
-      if (pool.length) { cardText = `Ich hab noch nie... ${pool[Math.floor(Math.random() * pool.length)]}`; }
+      } else if (currentGame === "ich-hab-noch-nie") {
+        const prevText = currentCardTextRef.current?.replace("Ich hab noch nie... ", "") ?? "";
+        const { data } = await supabase.from("ich_hab_noch_nie").select("id, text").neq("text", prevText).limit(15);
+        const supaTexts = data?.map((c) => c.text) ?? [];
+        const pool = mode18Plus ? [...supaTexts, ...ICH_HAB_NOCH_NIE_18_PLUS.filter((t) => t !== prevText)] : supaTexts;
+        if (pool.length) { cardText = `Ich hab noch nie... ${pool[Math.floor(Math.random() * pool.length)]}`; }
 
-    } else {
-      let q = supabase.from("aufgaben").select("id, text, typ").neq("id", currentCardIdRef.current ?? 0).limit(15);
-      if (currentGame === "wahrheit-oder-pflicht" && typ) { q = q.eq("typ", typ); meta = { typ }; }
-      else if (currentGame === "wer-wuerde-eher") {
-        q = q.eq("typ", "wer_wuerde_eher");
-        const all = playersRef.current;
-        if (all.length >= 2) { const s = [...all].sort(() => Math.random() - 0.5); meta = { player1: s[0].name, player2: s[1].name }; }
-      } else { q = q.neq("typ", "buzzer"); }
+      } else {
+        let q = supabase.from("aufgaben").select("id, text, typ").neq("id", currentCardIdRef.current ?? 0).limit(15);
+        if (currentGame === "wahrheit-oder-pflicht" && typ) { q = q.eq("typ", typ); meta = { typ }; }
+        else if (currentGame === "wer-wuerde-eher") {
+          q = q.eq("typ", "wer_wuerde_eher");
+          const all = playersRef.current;
+          if (all.length >= 2) { const s = [...all].sort(() => Math.random() - 0.5); meta = { player1: s[0].name, player2: s[1].name }; }
+        } else { q = q.neq("typ", "buzzer"); }
 
-      const { data } = await q;
-      const supaItems = data ?? [];
+        const { data } = await q;
+        const supaItems = data ?? [];
 
-      // Lokale 18+-Texte dazumischen
-      let localTexts: string[] = [];
-      if (mode18Plus) {
-        if (currentGame === "wahrheit-oder-pflicht" && typ === "wahrheit") localTexts = WAHRHEIT_18_PLUS;
-        else if (currentGame === "wahrheit-oder-pflicht" && typ === "pflicht") localTexts = PFLICHT_18_PLUS;
-        else if (currentGame === "wer-wuerde-eher") localTexts = WER_WUERDE_EHER_18_PLUS;
-        else localTexts = [...WAHRHEIT_18_PLUS, ...PFLICHT_18_PLUS, ...WER_WUERDE_EHER_18_PLUS];
-      }
+        // Lokale 18+-Texte dazumischen
+        let localTexts: string[] = [];
+        if (mode18Plus) {
+          if (currentGame === "wahrheit-oder-pflicht" && typ === "wahrheit") localTexts = WAHRHEIT_18_PLUS;
+          else if (currentGame === "wahrheit-oder-pflicht" && typ === "pflicht") localTexts = PFLICHT_18_PLUS;
+          else if (currentGame === "wer-wuerde-eher") localTexts = WER_WUERDE_EHER_18_PLUS;
+          else localTexts = [...WAHRHEIT_18_PLUS, ...PFLICHT_18_PLUS, ...WER_WUERDE_EHER_18_PLUS];
+        }
 
-      const totalCount = supaItems.length + localTexts.length;
-      if (totalCount > 0) {
-        const idx = Math.floor(Math.random() * totalCount);
-        if (idx < supaItems.length) {
-          const c = supaItems[idx];
-          cardText = c.text; cardId = c.id; currentCardIdRef.current = c.id;
-        } else {
-          cardText = localTexts[idx - supaItems.length];
+        const totalCount = supaItems.length + localTexts.length;
+        if (totalCount > 0) {
+          const idx = Math.floor(Math.random() * totalCount);
+          if (idx < supaItems.length) {
+            const c = supaItems[idx];
+            cardText = c.text; cardId = c.id; currentCardIdRef.current = c.id;
+          } else {
+            cardText = localTexts[idx - supaItems.length];
+          }
         }
       }
-    }
 
-    // 18+-Modus-Flag in Meta weitertragen
-    if (mode18Plus) meta = { ...meta, mode18Plus: "true" };
+      // 18+-Modus-Flag in Meta weitertragen
+      if (mode18Plus) meta = { ...meta, mode18Plus: "true" };
 
-    // Zufälligen Spieler auswählen (kein Doppelpick; nicht bei Imposter, Wer-würde-eher, Ich-hab-noch-nie)
-    if (currentGame !== "imposter" && currentGame !== "wer-wuerde-eher" && currentGame !== "ich-hab-noch-nie") {
-      const pl = playersRef.current;
-      if (pl.length >= 1) {
-        const last = lastSelectedPlayerRef.current;
-        const others = pl.filter((p) => p.name !== last);
-        const pool = others.length > 0 ? others : pl;
-        const chosen = pool[Math.floor(Math.random() * pool.length)];
-        lastSelectedPlayerRef.current = chosen.name;
-        meta = { ...meta, selectedPlayer: chosen.name };
+      // Zufälligen Spieler auswählen (kein Doppelpick; nicht bei Imposter, Wer-würde-eher, Ich-hab-noch-nie)
+      if (currentGame !== "imposter" && currentGame !== "wer-wuerde-eher" && currentGame !== "ich-hab-noch-nie") {
+        const pl = playersRef.current;
+        if (pl.length >= 1) {
+          const last = lastSelectedPlayerRef.current;
+          const others = pl.filter((p) => p.name !== last);
+          const pool = others.length > 0 ? others : pl;
+          const chosen = pool[Math.floor(Math.random() * pool.length)];
+          lastSelectedPlayerRef.current = chosen.name;
+          meta = { ...meta, selectedPlayer: chosen.name };
+        }
       }
-    }
 
-    if (cardText) {
-      await supabase.from("rooms").update({ current_card_id: cardId, current_card_text: cardText, current_meta: meta }).eq("id", upperCode);
-      setCurrentCardText(cardText); setCurrentMeta(meta);
+      if (cardText) {
+        await supabase.from("rooms").update({ current_card_id: cardId, current_card_text: cardText, current_meta: meta }).eq("id", upperCode);
+        setCurrentCardText(cardText); setCurrentMeta(meta);
+      }
+    } catch (err) {
+      console.error("karteZiehen Fehler:", err);
     }
     setIsLoading(false);
   }, [currentGame, upperCode]);
 
   const imposterAuflösung = useCallback(async () => {
     const newMeta = { ...currentMeta, revealed: "true" };
-    await supabase.from("rooms").update({ current_meta: newMeta }).eq("id", upperCode);
-    setCurrentMeta(newMeta);
+    try {
+      const { error } = await supabase.from("rooms").update({ current_meta: newMeta }).eq("id", upperCode);
+      if (error) throw error;
+      setCurrentMeta(newMeta);
+    } catch (err) {
+      console.error("imposterAuflösung Fehler:", err);
+    }
   }, [currentMeta, upperCode]);
 
   async function toggle18Plus() {
     const active = currentMeta.mode18Plus === "true";
     const newMeta = { ...currentMeta, mode18Plus: active ? "false" : "true" };
-    await supabase.from("rooms").update({ current_meta: newMeta }).eq("id", upperCode);
-    setCurrentMeta(newMeta);
+    try {
+      const { error } = await supabase.from("rooms").update({ current_meta: newMeta }).eq("id", upperCode);
+      if (error) throw error;
+      setCurrentMeta(newMeta);
+    } catch (err) {
+      console.error("toggle18Plus Fehler:", err);
+    }
   }
 
   async function spielWählen(gameId: GameId) {
@@ -276,23 +289,45 @@ export default function RoomPage() {
         initialMeta.isStart = "true";
       }
     }
-    await supabase.from("rooms").update({ current_game: gameId, current_card_text: null, current_card_id: null, current_meta: initialMeta }).eq("id", upperCode);
-    setCurrentGame(gameId); setCurrentCardText(null); setCurrentMeta(initialMeta); currentCardIdRef.current = null;
+    try {
+      const { error } = await supabase.from("rooms").update({ current_game: gameId, current_card_text: null, current_card_id: null, current_meta: initialMeta }).eq("id", upperCode);
+      if (error) throw error;
+      setCurrentGame(gameId); setCurrentCardText(null); setCurrentMeta(initialMeta); currentCardIdRef.current = null;
+    } catch (err) {
+      console.error("spielWählen Fehler:", err);
+    }
   }
 
   async function zurückZurLobby() {
-    await supabase.from("rooms").update({ current_game: null, current_card_text: null, current_card_id: null, current_meta: {} }).eq("id", upperCode);
-    setCurrentGame(null); setCurrentCardText(null);
+    try {
+      const { error } = await supabase.from("rooms").update({ current_game: null, current_card_text: null, current_card_id: null, current_meta: {} }).eq("id", upperCode);
+      if (error) throw error;
+      setCurrentGame(null); setCurrentCardText(null);
+    } catch (err) {
+      console.error("zurückZurLobby Fehler:", err);
+    }
   }
 
   async function verlassen() {
-    if (isHost) { await supabase.from("rooms").delete().eq("id", upperCode); localStorage.removeItem(`trinkspiel_host_${upperCode}`); }
+    if (isHost) {
+      try {
+        const { error } = await supabase.from("rooms").delete().eq("id", upperCode);
+        if (error) throw error;
+      } catch (err) {
+        console.error("verlassen (Raum löschen) Fehler:", err);
+      }
+      localStorage.removeItem(`trinkspiel_host_${upperCode}`);
+    }
     router.push("/online");
   }
 
   async function kopieren() {
-    await navigator.clipboard.writeText(upperCode);
-    setCopied(true); setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(upperCode);
+      setCopied(true); setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard nicht verfügbar (z.B. kein HTTPS) – still ignorieren
+    }
   }
 
   if (pageLoading) return (
@@ -305,7 +340,7 @@ export default function RoomPage() {
     <GameLayout title="Online Multiplayer" titleIcon={<Globe className="h-4 w-4 text-sky-400" />} glowColor="rgba(14,165,233,0.10)">
       <div className="flex items-start gap-3 rounded-2xl border border-red-800 bg-red-950/50 p-5">
         <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
-        <p className="text-sm font-bold text-red-300">{fehler}</p>
+        <p className="text-[18px] font-bold text-red-300">{fehler}</p>
       </div>
     </GameLayout>
   );
@@ -318,16 +353,16 @@ export default function RoomPage() {
         <div className="rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2">
           <span className="text-xl font-black tracking-widest text-white">{upperCode}</span>
         </div>
-        <button onClick={kopieren} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] transition-colors active:bg-white/10">
+        <button onClick={kopieren} className="flex min-h-[52px] min-w-[52px] items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] transition-colors active:bg-white/10">
           {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4 text-zinc-400" />}
         </button>
       </div>
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5">
-          <Users className="h-4 w-4 text-zinc-400" /><span className="text-sm font-black text-zinc-300">{players.length}</span>
+          <Users className="h-4 w-4 text-zinc-400" /><span className="text-[18px] font-black text-zinc-300">{players.length}</span>
         </div>
-        <button onClick={verlassen} className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] transition-colors hover:bg-red-950 hover:border-red-800">
-          <LogOut className="h-4 w-4 text-zinc-400" />
+        <button onClick={verlassen} className="flex min-h-[52px] min-w-[52px] items-center justify-center rounded-full border border-white/10 bg-white/[0.05] transition-colors hover:bg-red-950 hover:border-red-800 active:bg-red-950 active:border-red-800">
+          <LogOut className="h-5 w-5 text-zinc-400" />
         </button>
       </div>
     </div>
@@ -340,41 +375,42 @@ export default function RoomPage() {
       <div className="flex flex-col gap-5">
         {RoomHeader}
         <div className="rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_4px_20px_rgba(0,0,0,0.3)] p-4">
-          <p className="mb-3 text-xs font-black uppercase tracking-widest text-zinc-500">Verbundene Spieler</p>
+          <p className="mb-3 text-[18px] font-black uppercase tracking-widest text-zinc-400">Verbundene Spieler</p>
           <div className="flex flex-col gap-2">
-            {players.length === 0 ? <p className="text-sm font-semibold text-zinc-600 py-2">Warte auf Spieler...</p>
-              : players.map((p, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-2xl bg-white/[0.04] px-3 py-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-sm font-black text-white">{p.name[0]?.toUpperCase()}</div>
-                  <span className="flex-1 text-xl font-black text-white">{p.name}</span>
-                  {p.isHost && <div className="flex items-center gap-1 rounded-full bg-amber-950/60 px-2 py-0.5"><Crown className="h-3 w-3 text-amber-400" /><span className="text-xs font-black text-amber-400">Host</span></div>}
-                </div>
-              ))}
+            {players.length === 0 ? (
+              <p className="text-[18px] font-semibold text-zinc-400 py-2">Warte auf Spieler...</p>
+            ) : players.map((p, i) => (
+              <div key={i} className="flex items-center gap-3 rounded-2xl bg-white/[0.04] px-3 py-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-[18px] font-black text-white">{p.name[0]?.toUpperCase()}</div>
+                <span className="flex-1 truncate text-[20px] font-black text-white">{p.name}</span>
+                {p.isHost && <div className="flex items-center gap-1 rounded-full bg-amber-950/60 px-2 py-1"><Crown className="h-3.5 w-3.5 text-amber-400" /><span className="text-[18px] font-black text-amber-400">Host</span></div>}
+              </div>
+            ))}
           </div>
         </div>
         {isHost ? (
           <div>
-            <p className="mb-3 text-xs font-black uppercase tracking-widest text-zinc-500">Spiel auswählen</p>
+            <p className="mb-3 text-[18px] font-black uppercase tracking-widest text-zinc-400">Spiel auswählen</p>
             <div className="grid grid-cols-2 gap-3">
               {SPIELE.map(({ id, label, desc, Icon, iconGradient, cardGradient, border }) => (
                 <button
                   key={id}
                   onClick={() => id === "imposter" ? setImposterPickerOpen(true) : spielWählen(id)}
-                  className={`group flex min-h-[150px] flex-col rounded-3xl border p-4 text-left bg-gradient-to-br ${cardGradient} ${border} backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.3)] transition-all duration-200 active:scale-95`}
+                  className={`group flex min-h-[150px] flex-col rounded-3xl border p-4 text-left bg-gradient-to-br ${cardGradient} ${border} backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.3)] transition-all duration-200 active:scale-[0.97]`}
                 >
                   <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${iconGradient} shadow-lg`}>
                     <Icon className="h-6 w-6 text-white" />
                   </div>
-                  <p className="text-sm font-black text-white leading-snug">{label}</p>
-                  <p className="mt-1 text-xs font-semibold text-zinc-400">{desc}</p>
+                  <p className="text-[18px] font-black text-white leading-snug">{label}</p>
+                  <p className="mt-1 text-[18px] font-semibold text-zinc-400">{desc}</p>
                 </button>
               ))}
             </div>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 rounded-3xl border border-dashed border-white/10 bg-white/[0.02] py-10">
-            <Crown className="h-8 w-8 text-zinc-600" />
-            <p className="font-black text-zinc-500">Warte auf den Host...</p>
+            <Crown className="h-8 w-8 text-zinc-400" />
+            <p className="font-black text-zinc-400">Warte auf den Host...</p>
           </div>
         )}
       </div>
@@ -391,27 +427,27 @@ export default function RoomPage() {
           <div className="flex flex-col gap-3">
             <button
               onClick={() => { onlineImposterCountRef.current = 1; setImposterPickerOpen(false); spielWählen("imposter"); }}
-              className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.05] p-5 text-left transition-all active:scale-95"
+              className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.05] p-5 text-left transition-all active:scale-[0.97]"
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/20 text-2xl">🕵️</div>
               <div>
-                <p className="font-black text-white">1 Imposter</p>
-                <p className="text-sm text-zinc-500">Klassisch</p>
+                <p className="text-[18px] font-black text-white">1 Imposter</p>
+                <p className="text-[18px] text-zinc-400">Klassisch</p>
               </div>
             </button>
             <button
               onClick={() => { onlineImposterCountRef.current = 2; setImposterPickerOpen(false); spielWählen("imposter"); }}
-              className="flex items-center gap-4 rounded-2xl border border-red-500/30 bg-red-950/30 p-5 text-left transition-all active:scale-95"
+              className="flex items-center gap-4 rounded-2xl border border-red-500/30 bg-red-950/30 p-5 text-left transition-all active:scale-[0.97]"
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/20 text-2xl">🕵️🕵️</div>
               <div>
-                <p className="font-black text-white">2 Imposter</p>
-                <p className="text-sm text-zinc-500">Mehr Chaos</p>
+                <p className="text-[18px] font-black text-white">2 Imposter</p>
+                <p className="text-[18px] text-zinc-400">Mehr Chaos</p>
               </div>
             </button>
             <button
               onClick={() => setImposterPickerOpen(false)}
-              className="mt-1 rounded-2xl border border-white/10 bg-white/[0.05] py-3 font-black text-zinc-500 transition-all active:scale-95"
+              className="mt-1 rounded-2xl border border-white/10 bg-white/[0.05] py-[14px] text-[18px] font-black text-zinc-400 transition-all active:scale-[0.97]"
             >
               Abbrechen
             </button>
@@ -443,18 +479,21 @@ export default function RoomPage() {
       <div className="flex flex-1 flex-col justify-between">
         {RoomHeader}
         {isHost && (
-          <button onClick={zurückZurLobby} className="mb-4 flex items-center gap-1.5 self-start rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-black text-zinc-400 transition-colors hover:bg-white/10">
+          <button onClick={zurückZurLobby} className="mb-4 flex items-center gap-1.5 self-start rounded-full border border-white/10 bg-white/[0.05] px-4 py-[14px] text-[18px] font-black text-zinc-400 transition-colors hover:bg-white/10 active:bg-white/10">
             <ChevronLeft className="h-3.5 w-3.5" /> Spiel wechseln
           </button>
         )}
         {/* Startspieler-Banner – prominent über der Karte */}
         {currentMeta.selectedPlayer && currentGame !== "wer-wuerde-eher" && currentGame !== "ich-hab-noch-nie" && currentGame !== "imposter" && (
-          <div className="pop-animate mb-4 flex flex-col items-center gap-1.5">
+          <div
+            key={currentMeta.selectedPlayer + currentCardText}
+            className="player-pop mb-4 flex flex-col items-center gap-1.5"
+          >
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-[0_0_24px_rgba(251,191,36,0.45)] text-4xl font-black text-white">
               {currentMeta.selectedPlayer[0]?.toUpperCase()}
             </div>
             <p className="text-[28px] font-black text-white">{currentMeta.selectedPlayer}</p>
-            <span className="rounded-full bg-amber-500/20 border border-amber-500/30 px-3 py-0.5 text-sm font-black uppercase tracking-widest text-amber-400">
+            <span className="rounded-full bg-amber-500/20 border border-amber-500/30 px-3 py-1 text-[18px] font-black uppercase tracking-widest text-amber-400">
               {currentMeta.isStart === "true" ? "🎲 fängt an!" : "🎯 ist dran!"}
             </span>
           </div>
@@ -467,30 +506,30 @@ export default function RoomPage() {
               {countdown !== null ? (
                 <div className="relative overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center">
                   <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
-                  <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-6">
+                  <p className="text-[18px] font-black uppercase tracking-widest text-zinc-400 mb-6">
                     Neue Runde startet in
                   </p>
                   <div className="flex h-40 w-40 mx-auto items-center justify-center rounded-full border border-red-500/30 bg-red-950/40 mb-6">
                     <span className="text-8xl font-black text-white">{countdown}</span>
                   </div>
-                  <p className="text-base font-black text-zinc-400">Macht euch bereit!</p>
+                  <p className="text-[18px] font-black text-zinc-400">Macht euch bereit!</p>
                 </div>
               ) : !currentMeta.word ? (
                 <div className="relative overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center">
                   <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
                   <div className="py-4">
                     {isHost
-                      ? <p className="font-black text-zinc-500">Starte die erste Runde!</p>
-                      : <p className="font-black text-zinc-500">Warte auf den Host...</p>}
+                      ? <p className="font-black text-zinc-400">Starte die erste Runde!</p>
+                      : <p className="font-black text-zinc-400">Warte auf den Host...</p>}
                   </div>
                 </div>
               ) : imposterRevealed ? (
                 <div className="relative overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center">
                   <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
-                  <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-2">Auflösung</p>
-                  <p className="text-sm font-bold text-zinc-400 mb-1">Das Wort war</p>
+                  <p className="text-[18px] font-black uppercase tracking-widest text-zinc-400 mb-2">Auflösung</p>
+                  <p className="text-[18px] font-bold text-zinc-400 mb-1">Das Wort war</p>
                   <p className="text-4xl font-black text-white mb-4">{currentMeta.word}</p>
-                  <p className="text-sm font-bold text-zinc-400 mb-1">{twoImpostersOnline ? "Die Imposter waren" : "Der Imposter war"}</p>
+                  <p className="text-[18px] font-bold text-zinc-400 mb-1">{twoImpostersOnline ? "Die Imposter waren" : "Der Imposter war"}</p>
                   <p className="text-2xl font-black text-red-400">
                     {currentMeta.imposterName}{twoImpostersOnline && currentMeta.imposterName2 ? ` & ${currentMeta.imposterName2}` : ""} 🕵️
                   </p>
@@ -503,44 +542,47 @@ export default function RoomPage() {
                   <p className="text-5xl font-black text-red-300">IMPOSTER!</p>
                   {currentMeta.hintWord && (
                     <div className="mt-5 rounded-2xl border border-red-500/20 bg-red-500/10 px-5 py-3">
-                      <p className="text-xs font-black uppercase tracking-widest text-red-500/60 mb-1">
+                      <p className="text-[18px] font-black uppercase tracking-widest text-red-400 mb-1">
                         Dein Hilfswort
                       </p>
                       <p className="text-2xl font-black text-red-200">{currentMeta.hintWord}</p>
                     </div>
                   )}
-                  <p className="mt-4 text-sm font-bold text-red-400/70">
+                  <p className="mt-4 text-[18px] font-bold text-red-400">
                     Nutze dein Hilfswort – aber nenn das echte Wort nicht!
                   </p>
                 </div>
               ) : (
                 <div className="relative overflow-hidden rounded-3xl border border-emerald-500/50 bg-emerald-950/30 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center">
                   <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-emerald-500 to-green-400" />
-                  <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-3">Das Wort ist</p>
+                  <p className="text-[18px] font-black uppercase tracking-widest text-zinc-400 mb-3">Das Wort ist</p>
                   <p className="text-5xl font-black text-white mb-4">{currentMeta.word}</p>
-                  <p className="text-sm font-bold text-emerald-400/70">
+                  <p className="text-[18px] font-bold text-emerald-400">
                     Finde den Imposter! Nenn das Wort nicht direkt.
                   </p>
                 </div>
               )}
             </div>
           ) : (
-            <div className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)]">
+            <div
+              key={currentCardText ?? "empty"}
+              className="card-slide-right relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)]"
+            >
               <div className={`absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r ${cardGradient}`} />
               <div className="p-6 pb-8 pt-7">
                 {/* Wer würde eher: VS-Anzeige oben in der Karte */}
                 {currentGame === "wer-wuerde-eher" && currentMeta.player1 && (
                   <div className="mb-5 text-center">
-                    <p className="text-2xl font-black text-white leading-tight">
+                    <p className="text-[28px] font-black text-white leading-tight">
                       {currentMeta.player1}{" "}
-                      <span className="text-lg text-zinc-500">vs</span>{" "}
+                      <span className="text-[20px] text-zinc-400">vs</span>{" "}
                       {currentMeta.player2}
                     </p>
                   </div>
                 )}
 
                 {currentGame === "wahrheit-oder-pflicht" && currentMeta.typ && (
-                  <span className={`mb-4 inline-block rounded-xl px-3 py-1 text-xs font-black uppercase tracking-widest ${currentMeta.typ === "wahrheit" ? "bg-violet-800/60 text-violet-200" : "bg-pink-900/60 text-pink-200"}`}>
+                  <span className={`mb-4 inline-block rounded-xl px-3 py-1 text-[18px] font-black uppercase tracking-widest ${currentMeta.typ === "wahrheit" ? "bg-violet-800/60 text-violet-200" : "bg-pink-900/60 text-pink-200"}`}>
                     {currentMeta.typ}
                   </span>
                 )}
@@ -550,8 +592,8 @@ export default function RoomPage() {
                   <div className="py-10 text-center">
                     <div className="mb-3 text-4xl">{aktivesSpiel?.id === "ich-hab-noch-nie" ? "🙊" : aktivesSpiel?.id === "wahrheit-oder-pflicht" ? "🔥" : aktivesSpiel?.id === "wer-wuerde-eher" ? "🤷" : "🎲"}</div>
                     {isHost
-                      ? <p className="font-black text-zinc-400">Zieh die erste Karte!</p>
-                      : <p className="font-black text-zinc-500">Warte auf den Host...</p>}
+                      ? <p className="text-[18px] font-black text-zinc-400">Zieh die erste Karte!</p>
+                      : <p className="text-[18px] font-black text-zinc-400">Warte auf den Host...</p>}
                   </div>
                 )}
               </div>
@@ -565,12 +607,12 @@ export default function RoomPage() {
               onClick={isHost ? toggle18Plus : undefined}
               disabled={!isHost}
               className={`
-                flex w-full items-center justify-center gap-2 rounded-2xl py-2.5 text-sm font-black transition-all
+                flex w-full items-center justify-center gap-2 rounded-2xl py-[14px] text-[18px] font-black transition-all
                 ${currentMeta.mode18Plus === "true"
                   ? "border border-red-500/40 bg-red-950/60 text-red-300"
-                  : "border border-white/[0.10] bg-white/[0.04] text-zinc-500"
+                  : "border border-white/[0.10] bg-white/[0.04] text-zinc-400"
                 }
-                ${isHost ? "active:scale-95" : "cursor-default"}
+                ${isHost ? "active:scale-[0.97]" : "cursor-default"}
               `}
             >
               🔞 {currentMeta.mode18Plus === "true"
@@ -586,7 +628,7 @@ export default function RoomPage() {
                   <button
                     onClick={imposterAuflösung}
                     disabled={isLoading}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-500/40 bg-red-950/40 py-4 text-base font-black text-red-300 transition-all active:scale-95 disabled:opacity-60"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-500/40 bg-red-950/40 py-4 text-[18px] font-black text-red-300 transition-all active:scale-[0.97] disabled:opacity-60"
                   >
                     <UserX className="h-5 w-5" /> Auflösung anzeigen
                   </button>
@@ -594,7 +636,7 @@ export default function RoomPage() {
                 <button
                   onClick={() => karteZiehen()}
                   disabled={isLoading}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-red-500 to-orange-500 py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95 disabled:opacity-70"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-red-500 to-orange-500 py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-[0.97] disabled:opacity-70"
                 >
                   <SkipForward className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} />
                   {currentMeta.word ? "Neue Runde" : "Runde starten"}
@@ -602,22 +644,22 @@ export default function RoomPage() {
               </div>
             ) : currentGame === "wahrheit-oder-pflicht" ? (
               <div className="flex gap-3">
-                <button onClick={() => karteZiehen("wahrheit")} disabled={isLoading} className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-violet-500 py-4 text-base font-black text-white shadow-[0_0_16px_rgba(139,92,246,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95 disabled:opacity-60">
+                <button onClick={() => karteZiehen("wahrheit")} disabled={isLoading} className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-violet-500 py-4 text-[18px] font-black text-white shadow-[0_0_16px_rgba(139,92,246,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-[0.97] disabled:opacity-60">
                   <HelpCircle className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} /> Wahrheit
                 </button>
-                <button onClick={() => karteZiehen("pflicht")} disabled={isLoading} className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-pink-600 to-pink-500 py-4 text-base font-black text-white shadow-[0_0_16px_rgba(236,72,153,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95 disabled:opacity-60">
+                <button onClick={() => karteZiehen("pflicht")} disabled={isLoading} className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-pink-600 to-pink-500 py-4 text-[18px] font-black text-white shadow-[0_0_16px_rgba(236,72,153,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-[0.97] disabled:opacity-60">
                   <Flame className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} /> Pflicht
                 </button>
               </div>
             ) : (
-              <button onClick={() => karteZiehen()} disabled={isLoading} className={`flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${cardGradient} py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(99,102,241,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95 disabled:opacity-70`}>
+              <button onClick={() => karteZiehen()} disabled={isLoading} className={`flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${cardGradient} py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(99,102,241,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-[0.97] disabled:opacity-70`}>
                 <SkipForward className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} />
                 {currentCardText ? "Nächste Karte" : "Erste Karte ziehen"}
               </button>
             )
           ) : (
-            <div className="flex w-full items-center justify-center rounded-2xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] py-5">
-              <p className="text-sm font-black text-zinc-500">
+            <div className="flex w-full items-center justify-center rounded-2xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] py-[14px]">
+              <p className="text-[18px] font-black text-zinc-400">
                 {currentGame === "imposter" ? "Schau auf dein Display – nur für dich!" : "Der Host zieht die Karten"}
               </p>
             </div>

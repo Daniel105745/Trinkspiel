@@ -4,42 +4,83 @@
   --font-sans: var(--font-nunito);
 }
 
-/* CSS Design-System Variablen */
+/* ── Design-System Variablen ─────────────────────────────────────────────── */
 :root {
-  --bg: #0a0b14;
-  --card: rgba(255,255,255,0.06);
-  --card-border: rgba(255,255,255,0.12);
-  --text: #f0f0f8;
-  --text-muted: #6b7280;
-  --radius-card: 24px;
-  --radius-btn: 16px;
+  /* Farben */
+  --color-bg:          #0d0f1e;
+  --color-card:        rgba(255,255,255,0.07);
+  --color-card-border: rgba(255,255,255,0.18);
+  --color-text:        #ffffff;
+  --color-muted:       rgba(255,255,255,0.5);
+
+  /* Abstände */
+  --spacing-sm:  8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+
+  /* Radien */
+  --radius-sm:  12px;
+  --radius-md:  16px;
+  --radius-lg:  24px;
+
+  /* Typografie */
+  --font-display: 'Nunito', sans-serif;
+  --font-body:    'Nunito', sans-serif;
+
+  /* Legacy-Variablen (rückwärtskompatibel) */
+  --bg:           #0d0f1e;
+  --card:         rgba(255,255,255,0.07);
+  --card-border:  rgba(255,255,255,0.18);
+  --text:         #ffffff;
+  --text-muted:   rgba(255,255,255,0.5);
+  --radius-card:  24px;
+  --radius-btn:   16px;
 }
 
-/* Karten-Slide-Animation */
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes popIn {
-  0%   { opacity: 0; transform: scale(0.88); }
-  70%  { transform: scale(1.04); }
-  100% { opacity: 1; transform: scale(1); }
-}
-@keyframes shimmer {
-  0%   { opacity: 0.6; }
-  50%  { opacity: 1; }
-  100% { opacity: 0.6; }
-}
-.card-animate { animation: slideUp 0.28s ease-out both; }
-.pop-animate  { animation: popIn  0.32s ease-out both; }
-.shimmer      { animation: shimmer 1.8s ease-in-out infinite; }
+/* ── Animationen ─────────────────────────────────────────────────────────── */
 
+/* Slide von rechts (für neues Wischen) */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+
+/* Button-Press Federwirkung */
+@keyframes buttonPress {
+  0%   { transform: scale(1);    }
+  50%  { transform: scale(0.96); }
+  100% { transform: scale(1);    }
+}
+
+/* Spieler-Auswahl: pop-in mit Bounce */
+@keyframes playerPop {
+  0%   { opacity: 0; transform: scale(0.7)  translateY(12px); }
+  60%  { transform: scale(1.08) translateY(-4px); }
+  100% { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+/* ── Utility-Klassen ─────────────────────────────────────────────────────── */
+.card-slide-right  { animation: slideInRight  0.26s ease-out both; }
+.player-pop        { animation: playerPop     0.38s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* ── Globale Basis-Stile ─────────────────────────────────────────────────── */
 body {
-  background: #0d0f1e;
-  color: white;
-  font-family: var(--font-nunito), Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-nunito), var(--font-body), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /* iPhone Safe Area */
   padding-bottom: env(safe-area-inset-bottom);
+  /* Kein horizontales Overflow */
+  overflow-x: hidden;
+}
+
+/* Kein Text-Select auf Spielkarten */
+.select-none { user-select: none; -webkit-user-select: none; }
+
+/* Button-Press Feedback – alle interaktiven Elemente */
+button:active:not(:disabled),
+a:active {
+  transform: scale(0.97);
 }

@@ -122,12 +122,12 @@ export default function Buzzer() {
                           />
                         ))}
                       </div>
-                      <p className="text-lg font-black text-zinc-400">Warten...</p>
+                      <p className="text-[20px] font-black text-zinc-400">Warten...</p>
                     </div>
                   ) : (
                     <>
                       <div className="my-6 text-center text-6xl">⚡</div>
-                      <p className="text-center text-xl font-black text-white leading-snug">
+                      <p className="text-center text-[22px] font-black text-white leading-snug">
                         {card.text}
                       </p>
                     </>
@@ -195,7 +195,7 @@ export default function Buzzer() {
           <button
             onClick={nächsteKarte}
             disabled={gameState === "waiting" || gameState === "revealed"}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] py-3.5 text-sm font-black text-zinc-400 transition-all active:scale-95 disabled:opacity-30"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] py-[14px] text-[18px] font-black text-zinc-400 transition-all active:scale-[0.97] disabled:opacity-30"
           >
             <RefreshCw className="h-4 w-4" />
             Neue Karte

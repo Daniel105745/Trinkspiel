@@ -212,20 +212,20 @@ export default function ImposterPage() {
           {roundNumber > 0 && (
             <div className="relative overflow-hidden rounded-3xl border border-amber-500/20 bg-amber-950/20 backdrop-blur-xl p-5">
               <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-amber-400 to-orange-500" />
-              <p className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-amber-500/70">
-                <Trophy className="h-3.5 w-3.5" /> Punkte nach Runde {roundNumber}
+              <p className="mb-3 flex items-center gap-2 text-[18px] font-black uppercase tracking-widest text-amber-400">
+                <Trophy className="h-4 w-4" /> Punkte nach Runde {roundNumber}
               </p>
               <div className="flex flex-col gap-2">
                 {Array.from({ length: playerCount }, (_, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <span className="w-24 truncate text-sm font-bold text-zinc-300">{getName(playerNames, i)}</span>
+                    <span className="w-24 truncate text-[18px] font-bold text-zinc-300">{getName(playerNames, i)}</span>
                     <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
                       <div
                         className="h-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-500"
                         style={{ width: `${(scores[i] / maxScore) * 100}%` }}
                       />
                     </div>
-                    <span className="w-5 text-right text-sm font-black text-amber-400">{scores[i]}</span>
+                    <span className="w-6 text-right text-[18px] font-black text-amber-400">{scores[i]}</span>
                   </div>
                 ))}
               </div>
@@ -234,32 +234,34 @@ export default function ImposterPage() {
 
           {/* Spieleranzahl + Imposter-Anzahl */}
           <div className="rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] p-5">
-            <p className="mb-4 text-xs font-black uppercase tracking-widest text-zinc-500">Spieleranzahl</p>
+            <p className="mb-4 text-[18px] font-black uppercase tracking-widest text-zinc-400">Spieleranzahl</p>
             <div className="flex items-center justify-between gap-4">
               <button
                 onClick={() => setPlayerCount((p) => Math.max(3, p - 1))}
-                className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-zinc-300 transition-all active:scale-95"
+                className="flex min-h-[52px] min-w-[52px] items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-zinc-300 transition-all active:scale-[0.97]"
               >
                 <Minus className="h-5 w-5" />
               </button>
               <span className="text-5xl font-black text-white">{playerCount}</span>
               <button
                 onClick={() => setPlayerCount((p) => Math.min(10, p + 1))}
-                className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-zinc-300 transition-all active:scale-95"
+                className="flex min-h-[52px] min-w-[52px] items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-zinc-300 transition-all active:scale-[0.97]"
               >
                 <Plus className="h-5 w-5" />
               </button>
             </div>
 
-            {/* Imposter-Anzahl Toggle */}
-            <div className="mt-4 flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              <div>
-                <p className="text-sm font-black text-zinc-300">2 Imposter</p>
-                <p className="text-xs font-semibold text-zinc-600">Mehr Chaos, mehr Spaß</p>
+            {/* Imposter-Anzahl Toggle – als klickbare Zeile mit ausreichend Touch-Target */}
+            <button
+              onClick={() => setTwoImposters((v) => !v)}
+              className="mt-4 flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-[14px] transition-all active:scale-[0.97]"
+            >
+              <div className="text-left">
+                <p className="text-[18px] font-black text-zinc-300">2 Imposter</p>
+                <p className="text-[18px] font-semibold text-zinc-400">Mehr Chaos, mehr Spaß</p>
               </div>
-              <button
-                onClick={() => setTwoImposters((v) => !v)}
-                className={`relative h-7 w-12 rounded-full transition-colors duration-200 ${
+              <div
+                className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 ${
                   twoImposters ? "bg-red-500" : "bg-white/10"
                 }`}
               >
@@ -268,17 +270,17 @@ export default function ImposterPage() {
                     twoImposters ? "translate-x-5" : "translate-x-0.5"
                   }`}
                 />
-              </button>
-            </div>
+              </div>
+            </button>
           </div>
 
           {/* Spielernamen */}
           <div className="rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] p-5">
-            <p className="mb-4 text-xs font-black uppercase tracking-widest text-zinc-500">Spielernamen</p>
+            <p className="mb-4 text-[18px] font-black uppercase tracking-widest text-zinc-400">Spielernamen</p>
             <div className="flex flex-col gap-2">
               {Array.from({ length: playerCount }, (_, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 text-sm font-black text-zinc-400">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[18px] font-black text-zinc-400">
                     {i + 1}
                   </div>
                   <input
@@ -287,7 +289,7 @@ export default function ImposterPage() {
                     onChange={(e) => updateName(i, e.target.value)}
                     placeholder={`Spieler ${i + 1}`}
                     maxLength={15}
-                    className="flex-1 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-sm font-bold text-white placeholder-zinc-600 outline-none focus:border-red-500/40 focus:bg-white/[0.08]"
+                    className="flex-1 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-3 text-[18px] font-bold text-white placeholder-zinc-500 outline-none focus:border-red-500/40 focus:bg-white/[0.08]"
                   />
                 </div>
               ))}
@@ -296,11 +298,11 @@ export default function ImposterPage() {
 
           {/* Kategorie */}
           <div>
-            <p className="mb-3 text-xs font-black uppercase tracking-widest text-zinc-500">Kategorie</p>
+            <p className="mb-3 text-[18px] font-black uppercase tracking-widest text-zinc-400">Kategorie</p>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => kategorieWählen(null)}
-                className={`rounded-full px-4 py-2 text-sm font-black transition-all active:scale-95 ${
+                className={`rounded-full px-4 py-[14px] text-[18px] font-black transition-all active:scale-[0.97] ${
                   !kategorie
                     ? "bg-red-500 text-white shadow-[0_0_12px_rgba(239,68,68,0.4)]"
                     : "border border-white/10 bg-white/[0.05] text-zinc-400"
@@ -312,7 +314,7 @@ export default function ImposterPage() {
                 <button
                   key={k}
                   onClick={() => kategorieWählen(k)}
-                  className={`rounded-full px-4 py-2 text-sm font-black transition-all active:scale-95 ${
+                  className={`rounded-full px-4 py-[14px] text-[18px] font-black transition-all active:scale-[0.97] ${
                     kategorie === k
                       ? "bg-red-500 text-white shadow-[0_0_12px_rgba(239,68,68,0.4)]"
                       : "border border-white/10 bg-white/[0.05] text-zinc-400"
@@ -327,11 +329,11 @@ export default function ImposterPage() {
           {/* Wort-Vorschau */}
           <div className="relative overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-6">
             <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
-            <p className="mb-2 text-xs font-black uppercase tracking-widest text-zinc-500">Geheimes Wort</p>
+            <p className="mb-2 text-[18px] font-black uppercase tracking-widest text-zinc-400">Geheimes Wort</p>
             <p className="text-4xl font-black text-white">{word}</p>
             <button
               onClick={() => setWord(pickWord(kategorie))}
-              className="mt-4 flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-2.5 text-sm font-black text-zinc-400 transition-all active:scale-95"
+              className="mt-4 flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-[14px] text-[18px] font-black text-zinc-400 transition-all active:scale-[0.97]"
             >
               <Shuffle className="h-4 w-4" /> Anderes Wort
             </button>
@@ -340,7 +342,7 @@ export default function ImposterPage() {
           {/* Start */}
           <button
             onClick={spielStarten}
-            className="flex w-full items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-red-500 to-orange-500 py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95"
+            className="flex w-full items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-red-500 to-orange-500 py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-[0.97]"
           >
             <UserX className="h-5 w-5" />
             {roundNumber > 0 ? "Runde starten" : "Spiel starten"}
@@ -360,7 +362,7 @@ export default function ImposterPage() {
           glowColor="rgba(239,68,68,0.10)"
         >
           <div className="flex flex-1 flex-col items-center justify-center gap-6 pb-2">
-            <p className="text-xs font-black uppercase tracking-widest text-zinc-500">
+            <p className="text-[18px] font-black uppercase tracking-widest text-zinc-400">
               Runde {roundNumber} startet in
             </p>
             <div className="relative flex h-48 w-48 items-center justify-center rounded-full border border-red-500/30 bg-red-950/40">
@@ -384,7 +386,7 @@ export default function ImposterPage() {
             <p className="text-lg font-black text-zinc-300">
               {getName(playerNames, currentPlayer)} ist dran
             </p>
-            <p className="mt-1 text-sm font-semibold text-zinc-500">
+            <p className="mt-1 text-[18px] font-semibold text-zinc-400">
               Halte das Display verdeckt – nur du schaust!
             </p>
           </div>
@@ -393,7 +395,7 @@ export default function ImposterPage() {
             {!showRole && !acknowledged && (
               <button
                 onClick={() => setShowRole(true)}
-                className="relative w-full overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-10 flex flex-col items-center gap-5 transition-all active:scale-95"
+                className="relative w-full overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-10 flex flex-col items-center gap-5 transition-all active:scale-[0.97]"
               >
                 <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
                 <div className="flex h-24 w-24 items-center justify-center rounded-3xl border border-red-500/30 bg-red-500/10">
@@ -424,12 +426,12 @@ export default function ImposterPage() {
                     <p className="text-2xl font-black text-red-400">Du bist der</p>
                     <p className="text-5xl font-black text-red-300">IMPOSTER!</p>
                     <div className="w-full rounded-2xl border border-red-500/20 bg-red-500/10 px-5 py-3 text-center">
-                      <p className="text-xs font-black uppercase tracking-widest text-red-500/60 mb-1">
+                      <p className="text-[18px] font-black uppercase tracking-widest text-red-400 mb-1">
                         Dein Hilfswort
                       </p>
                       <p className="text-2xl font-black text-red-200">{hintWord}</p>
                     </div>
-                    <p className="text-center text-sm font-bold text-red-400/70">
+                    <p className="text-center text-[18px] font-bold text-red-400">
                       Nutze dein Hilfswort – aber nenn das echte Wort nicht!
                     </p>
                   </>
@@ -438,18 +440,18 @@ export default function ImposterPage() {
                     <div className="flex h-24 w-24 items-center justify-center rounded-3xl border border-emerald-500/30 bg-emerald-500/10">
                       <Eye className="h-12 w-12 text-emerald-400" />
                     </div>
-                    <p className="text-xs font-black uppercase tracking-widest text-zinc-500">
+                    <p className="text-[18px] font-black uppercase tracking-widest text-zinc-400">
                       Das geheime Wort ist
                     </p>
                     <p className="text-5xl font-black text-white">{word}</p>
-                    <p className="text-center text-sm font-bold text-emerald-400/70">
+                    <p className="text-center text-[18px] font-bold text-emerald-400">
                       Finde den Imposter! Nenn das Wort nicht direkt.
                     </p>
                   </>
                 )}
                 <button
                   onClick={verstanden}
-                  className="mt-2 flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.05] px-6 py-3 text-sm font-black text-zinc-400 transition-all active:scale-95"
+                  className="mt-2 flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.05] px-6 py-[14px] text-[18px] font-black text-zinc-400 transition-all active:scale-[0.97]"
                 >
                   <EyeOff className="h-4 w-4" /> Verstanden &amp; Verbergen
                 </button>
@@ -460,9 +462,9 @@ export default function ImposterPage() {
               <div className="relative w-full overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] p-10 flex flex-col items-center gap-5">
                 <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-zinc-600 to-zinc-500" />
                 <div className="flex h-24 w-24 items-center justify-center rounded-3xl border border-white/10 bg-white/[0.05]">
-                  <EyeOff className="h-12 w-12 text-zinc-600" />
+                  <EyeOff className="h-12 w-12 text-zinc-400" />
                 </div>
-                <p className="text-xl font-black text-zinc-500">Verdeckt</p>
+                <p className="text-xl font-black text-zinc-400">Verdeckt</p>
               </div>
             )}
           </div>
@@ -470,7 +472,7 @@ export default function ImposterPage() {
           {acknowledged && (
             <button
               onClick={nächsterSpieler}
-              className="flex items-center gap-2 rounded-3xl bg-gradient-to-r from-red-500 to-orange-500 px-8 py-4 text-lg font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95"
+              className="flex items-center gap-2 rounded-3xl bg-gradient-to-r from-red-500 to-orange-500 px-8 py-4 text-lg font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-[0.97]"
             >
               {currentPlayer + 1 >= playerCount
                 ? "Los geht's!"
@@ -497,13 +499,13 @@ export default function ImposterPage() {
             <p className="text-2xl font-black text-white mb-2">
               🕵️ Findet {twoImposters ? "die Imposter!" : "den Imposter!"}
             </p>
-            <p className="text-sm font-semibold text-zinc-400">
+            <p className="text-[18px] font-semibold text-zinc-400">
               Redet abwechselnd über das Wort, ohne es direkt zu nennen. Wer klingt verdächtig?
             </p>
           </div>
 
           <div>
-            <p className="mb-3 text-xs font-black uppercase tracking-widest text-zinc-500">
+            <p className="mb-3 text-[18px] font-black uppercase tracking-widest text-zinc-400">
               Wen verdächtigt ihr?
             </p>
             <div className="flex flex-col gap-2">
@@ -511,20 +513,20 @@ export default function ImposterPage() {
                 <button
                   key={i}
                   onClick={() => setVotedFor(votedFor === i ? null : i)}
-                  className={`flex items-center gap-3 rounded-2xl border p-4 text-left transition-all active:scale-95 ${
+                  className={`flex items-center gap-3 rounded-2xl border p-4 text-left transition-all active:scale-[0.97] ${
                     votedFor === i
                       ? "border-red-500/60 bg-red-950/40"
                       : "border-white/[0.12] bg-white/[0.06]"
                   }`}
                 >
                   <div
-                    className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-black ${
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl text-[18px] font-black ${
                       votedFor === i ? "bg-red-500 text-white" : "bg-white/10 text-zinc-300"
                     }`}
                   >
                     {i + 1}
                   </div>
-                  <span className={`font-black ${votedFor === i ? "text-white" : "text-zinc-300"}`}>
+                  <span className={`text-[18px] font-black ${votedFor === i ? "text-white" : "text-zinc-300"}`}>
                     {getName(playerNames, i)}
                   </span>
                   {votedFor === i && <span className="ml-auto text-red-400">🎯</span>}
@@ -536,7 +538,7 @@ export default function ImposterPage() {
           <button
             onClick={auflösung}
             disabled={votedFor === null}
-            className="flex w-full items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-red-500 to-orange-500 py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95 disabled:opacity-40"
+            className="flex w-full items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-red-500 to-orange-500 py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-[0.97] disabled:opacity-40"
           >
             Auflösung!
           </button>
@@ -573,11 +575,11 @@ export default function ImposterPage() {
           {votedCorrectly ? (
             <>
               <p className="text-3xl font-black text-emerald-300 mb-2">Richtig!</p>
-              <p className="text-base font-bold text-zinc-400">
+              <p className="text-[18px] font-bold text-zinc-400">
                 {getName(playerNames, votedFor!)} war {mehrere ? "ein" : "der"} Imposter – muss trinken!
               </p>
               {mehrere && (
-                <p className="mt-1 text-sm text-zinc-500">
+                <p className="mt-1 text-[18px] text-zinc-400">
                   Auch dabei: {imposterIndices.filter((i) => i !== votedFor).map((i) => getName(playerNames, i)).join(", ")}
                 </p>
               )}
@@ -585,14 +587,14 @@ export default function ImposterPage() {
           ) : (
             <>
               <p className="text-3xl font-black text-red-300 mb-2">Falsch!</p>
-              <p className="text-base font-bold text-zinc-400">
+              <p className="text-[18px] font-bold text-zinc-400">
                 {imposterNames.join(" & ")} {mehrere ? "waren die echten Imposter" : "war der echte Imposter"} – alle anderen trinken!
               </p>
             </>
           )}
 
           <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.05] p-4">
-            <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-1">Das Wort war</p>
+            <p className="text-[18px] font-black uppercase tracking-widest text-zinc-400 mb-1">Das Wort war</p>
             <p className="text-4xl font-black text-white">{word}</p>
           </div>
         </div>
@@ -600,20 +602,20 @@ export default function ImposterPage() {
         {/* Scoreboard */}
         <div className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-amber-500/20 bg-amber-950/20 backdrop-blur-xl p-5">
           <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-amber-400 to-orange-500" />
-          <p className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-amber-500/70">
-            <Trophy className="h-3.5 w-3.5" /> Punkte nach Runde {roundNumber}
+          <p className="mb-3 flex items-center gap-2 text-[18px] font-black uppercase tracking-widest text-amber-400">
+            <Trophy className="h-4 w-4" /> Punkte nach Runde {roundNumber}
           </p>
           <div className="flex flex-col gap-2">
             {Array.from({ length: playerCount }, (_, i) => (
               <div key={i} className="flex items-center gap-3">
-                <span className="w-24 truncate text-sm font-bold text-zinc-300">{getName(playerNames, i)}</span>
+                <span className="w-24 truncate text-[18px] font-bold text-zinc-300">{getName(playerNames, i)}</span>
                 <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
                   <div
                     className="h-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-500"
                     style={{ width: `${(scores[i] / maxScore) * 100}%` }}
                   />
                 </div>
-                <span className="w-5 text-right text-sm font-black text-amber-400">{scores[i]}</span>
+                <span className="w-6 text-right text-[18px] font-black text-amber-400">{scores[i]}</span>
               </div>
             ))}
           </div>
@@ -623,14 +625,14 @@ export default function ImposterPage() {
         <div className="flex w-full max-w-sm flex-col gap-3">
           <button
             onClick={neueRunde}
-            className="flex w-full items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-red-500 to-orange-500 py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-95"
+            className="flex w-full items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-red-500 to-orange-500 py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-[0.97]"
           >
             <ChevronRight className="h-5 w-5" />
             Neue Runde
           </button>
           <button
             onClick={punkteZurücksetzen}
-            className="flex w-full items-center justify-center gap-2 rounded-3xl border border-white/10 bg-white/[0.05] py-4 text-base font-black text-zinc-400 transition-all active:scale-95"
+            className="flex w-full items-center justify-center gap-2 rounded-3xl border border-white/10 bg-white/[0.05] py-4 text-[18px] font-black text-zinc-400 transition-all active:scale-[0.97]"
           >
             <RotateCcw className="h-4 w-4" />
             Punkte zurücksetzen
