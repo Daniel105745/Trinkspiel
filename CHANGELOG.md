@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-03-30] – UI Refresh: Refined Minimal
+
+### Startseite (`app/page.tsx`)
+- **Spielkarten:** Bunte Gradient-Hintergründe + farbige Borders entfernt → einheitliche `bg-white/[0.05] border-white/[0.10]`; farbiger 2px-Top-Stripe pro Spiel
+- **Icons:** Lucide-Icon-Boxen entfernt → große Emojis direkt (🤔 ⚡ 🙋 🕵️)
+- **Kartentitel:** `text-[18px]` → `text-[20px]` für bessere Hierarchie gegenüber Subtitle
+- **Hero:** Gradient-Logo-Box + Glow-Blob entfernt → neutrales `bg-white/[0.07] border border-white/[0.12]`; Titel von "Trinkspiel App" → "Trinkspiel"; `pt-16 pb-10` → `pt-10 pb-8`
+- **Hintergrund-Glow:** Violetter `radial-gradient`-Overlay entfernt
+- **Online-Button:** Solid-Cyan-Gradient + Glow entfernt → cleaner Border-Button (`border-white/[0.15] bg-white/[0.06]`)
+- **Import:** `Eye, Zap, Users2, UserX` entfernt (nur noch `Globe`)
+
+### GameLayout (`components/GameLayout.tsx`)
+- **Nav-Padding:** `pt-12 pb-8` → `pt-8 pb-6` (mehr Content-Raum)
+
+### Angefasste Dateien
+- `app/page.tsx`
+- `components/GameLayout.tsx`
+
+---
+
 ## [2026-03-27] – Code & Design Fixes (Review-Durchlauf 3)
 
 ### Fehlerbehandlung

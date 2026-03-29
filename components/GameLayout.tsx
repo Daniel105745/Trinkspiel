@@ -27,7 +27,7 @@ export default function GameLayout({
       />
 
       {/* Glassmorphism Pill-Navigation */}
-      <nav className="relative z-10 flex items-center gap-2 pt-12 pb-8">
+      <nav className="relative z-10 flex items-center gap-2 pt-8 pb-6">
         {/* Zurück-Button: min 52px Touch-Target */}
         <Link
           href="/"
