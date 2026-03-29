@@ -1,127 +1,179 @@
+"use client";
+
 import Link from "next/link";
-import { Eye, Zap, Users2, Globe, UserX } from "lucide-react";
+import { Globe, ChevronRight } from "lucide-react";
 
 const SPIELE = [
   {
     href: "/wahrheit-oder-pflicht",
     title: "Wahrheit oder Pflicht",
-    subtitle: "Truth or Dare",
-    Icon: Eye,
-    iconGradient: "from-violet-500 to-purple-700",
-    cardGradient: "from-purple-900/50 to-purple-950/30",
-    border: "border-purple-500/20",
+    sub: "Truth or Dare",
+    emoji: "🔥",
+    grad: "from-violet-600 to-pink-500",
+    cardBg: "from-violet-900/25 to-purple-950/10",
+    border: "border-violet-500/20",
+    glow: "shadow-[0_4px_28px_rgba(139,92,246,0.12)]",
+    tag: "Klassiker",
+    tagC: "bg-violet-500/15 text-violet-300",
   },
   {
     href: "/ich-hab-noch-nie",
     title: "Ich hab noch nie",
-    subtitle: "Never Have I Ever",
-    Icon: Zap,
-    iconGradient: "from-sky-400 to-blue-600",
-    cardGradient: "from-slate-800/60 to-blue-950/40",
+    sub: "Never Have I Ever",
+    emoji: "🙊",
+    grad: "from-sky-400 to-cyan-500",
+    cardBg: "from-sky-900/25 to-blue-950/10",
     border: "border-sky-500/20",
+    glow: "shadow-[0_4px_28px_rgba(14,165,233,0.10)]",
+    tag: "Sozial",
+    tagC: "bg-sky-500/15 text-sky-300",
   },
   {
     href: "/wer-wuerde-eher",
-    title: "Am ehesten würde...",
-    subtitle: "Most Likely To",
-    Icon: Users2,
-    iconGradient: "from-green-400 to-emerald-600",
-    cardGradient: "from-green-900/50 to-green-950/30",
-    border: "border-green-500/20",
+    title: "Am ehesten würde…",
+    sub: "Most Likely To",
+    emoji: "🤷",
+    grad: "from-emerald-400 to-green-500",
+    cardBg: "from-emerald-900/25 to-green-950/10",
+    border: "border-emerald-500/20",
+    glow: "shadow-[0_4px_28px_rgba(52,211,153,0.10)]",
+    tag: "Gruppenspiel",
+    tagC: "bg-emerald-500/15 text-emerald-300",
   },
   {
     href: "/imposter",
     title: "Imposter",
-    subtitle: "Wer ist der Verräter?",
-    Icon: UserX,
-    iconGradient: "from-red-500 to-orange-600",
-    cardGradient: "from-red-900/50 to-red-950/30",
+    sub: "Wer ist der Verräter?",
+    emoji: "🕵️",
+    grad: "from-red-500 to-orange-500",
+    cardBg: "from-red-900/25 to-red-950/10",
     border: "border-red-500/20",
+    glow: "shadow-[0_4px_28px_rgba(239,68,68,0.10)]",
+    tag: "Detektiv",
+    tagC: "bg-red-500/15 text-red-300",
   },
 ];
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#0d0f1e] flex flex-col items-center px-5 pb-10">
-      {/* Hintergrund-Glow */}
+    <main className="min-h-screen flex flex-col items-center px-4 pb-10 overflow-x-hidden">
+      {/* ambient glow */}
       <div
         className="pointer-events-none fixed inset-0 z-0"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 20%, rgba(139,92,246,0.18) 0%, transparent 60%)",
+            "radial-gradient(ellipse 70% 45% at 50% 12%, rgba(139,92,246,0.12) 0%, transparent 70%)",
         }}
       />
 
-      {/* Hero */}
-      <div className="relative z-10 flex flex-col items-center gap-4 pt-16 pb-10">
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <div className="relative z-10 flex flex-col items-center pt-16 pb-6 gap-4">
         <div className="relative">
-          <div className="absolute inset-0 scale-[2.2] rounded-full bg-violet-600/30 blur-3xl" />
-          <div className="relative flex h-24 w-24 items-center justify-center rounded-[28px] bg-gradient-to-br from-violet-500 to-pink-500 text-5xl shadow-2xl shadow-violet-900/60">
-            🍺
+          <div className="absolute inset-0 scale-[2.4] rounded-full bg-violet-600/12 blur-3xl anim-glow" />
+          <div className="relative anim-float flex h-20 w-20 items-center justify-center rounded-[22px] bg-gradient-to-br from-violet-500 via-purple-500 to-pink-500 shadow-[0_6px_28px_rgba(139,92,246,0.5),inset_0_1px_0_rgba(255,255,255,0.25)]">
+            <span className="text-[40px] leading-none">🍺</span>
           </div>
         </div>
+
         <div className="text-center">
-          <h1 className="text-5xl font-black text-white tracking-tight">
-            Trinkspiel App
+          <h1 className="text-[32px] font-black text-white tracking-tight leading-none">
+            Trinkspiel
           </h1>
-          <p className="mt-2 text-lg font-semibold text-zinc-400 tracking-wide">
+          <p className="text-[32px] font-black text-grad-violet tracking-tight leading-none">
+            App
+          </p>
+          <p className="mt-2.5 text-[11px] font-bold text-zinc-500 tracking-[0.3em] uppercase">
             Party • Spaß • Chaos
           </p>
         </div>
       </div>
 
-      {/* Spielkarten – 2×2 Grid */}
-      <div className="relative z-10 grid w-full max-w-sm grid-cols-2 gap-4">
-        {SPIELE.map(({ href, title, subtitle, Icon, iconGradient, cardGradient, border }) => (
+      {/* ── Stats ────────────────────────────────────────────────────────── */}
+      <div className="relative z-10 w-full mb-5">
+        <div className="glass rounded-[14px] px-4 py-2.5 flex items-center justify-around">
+          {[
+            { v: "4", l: "Spiele" },
+            { v: "500+", l: "Fragen" },
+            { v: "∞", l: "Spaß" },
+          ].map(({ v, l }) => (
+            <div key={l} className="text-center">
+              <p className="text-[20px] font-black text-white leading-none">{v}</p>
+              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.12em] mt-0.5">{l}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Spiele-Grid ──────────────────────────────────────────────────── */}
+      <div className="relative z-10 w-full grid grid-cols-2 gap-2.5">
+        {SPIELE.map(({ href, title, sub, emoji, grad, cardBg, border, glow, tag, tagC }, i) => (
           <Link
             key={href}
             href={href}
             className={`
-              group flex min-h-[160px] flex-col rounded-3xl border p-4
-              bg-gradient-to-br ${cardGradient}
-              ${border}
-              backdrop-blur-xl
-              shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.3)]
-              transition-all duration-200
-              hover:bg-white/[0.08] active:scale-[0.97]
+              anim-pop group relative flex flex-col rounded-[var(--r-xl)] overflow-hidden
+              border ${border} bg-gradient-to-br ${cardBg}
+              backdrop-blur-xl ${glow}
+              hover:brightness-110
+              transition-all duration-200 active:scale-[0.96]
+              p-3.5 min-h-[168px]
             `}
+            style={{ animationDelay: `${i * 60}ms` }}
           >
-            <div
-              className={`mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${iconGradient} shadow-lg`}
-            >
-              <Icon className="h-6 w-6 text-white" />
+            {/* inner highlight */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.05] to-transparent pointer-events-none rounded-[var(--r-xl)]" />
+
+            {/* icon */}
+            <div className={`mb-2.5 flex h-11 w-11 items-center justify-center rounded-[12px] bg-gradient-to-br ${grad} shadow-[0_3px_12px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25)]`}>
+              <span className="text-[20px]">{emoji}</span>
             </div>
-            <p className="text-[18px] font-black text-white leading-tight">{title}</p>
-            <p className="mt-1 text-[18px] font-semibold text-zinc-400">{subtitle}</p>
+
+            {/* tag */}
+            <span className={`self-start mb-1.5 rounded-full px-2 py-[2px] text-[9px] font-extrabold uppercase tracking-wider ${tagC}`}>
+              {tag}
+            </span>
+
+            {/* text */}
+            <p className="text-[14px] font-extrabold text-white leading-tight">{title}</p>
+            <p className="mt-0.5 text-[11px] font-semibold text-zinc-500 leading-tight">{sub}</p>
+
+            {/* arrow */}
+            <div className="mt-auto pt-1.5 flex justify-end">
+              <div className="flex items-center justify-center h-6 w-6 rounded-full bg-white/8 group-hover:bg-white/15 transition-colors">
+                <ChevronRight className="h-3.5 w-3.5 text-white/50 group-hover:text-white/80 transition-colors" />
+              </div>
+            </div>
           </Link>
         ))}
       </div>
 
-      {/* ODER Divider */}
-      <div className="relative z-10 my-7 flex w-full max-w-sm items-center gap-4">
-        <div className="h-px flex-1 bg-white/10" />
-        <span className="text-[18px] font-black tracking-[0.3em] text-zinc-400">ODER</span>
-        <div className="h-px flex-1 bg-white/10" />
+      {/* ── Divider ──────────────────────────────────────────────────────── */}
+      <div className="relative z-10 my-5 flex w-full items-center gap-4">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/8" />
+        <span className="text-[10px] font-extrabold tracking-[0.4em] text-zinc-600 uppercase">oder</span>
+        <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/8" />
       </div>
 
-      {/* Online Multiplayer */}
-      <Link href="/online" className="relative z-10 w-full max-w-sm">
-        <div
-          className="
-            flex items-center justify-center gap-3 rounded-3xl
-            bg-gradient-to-r from-sky-400 to-cyan-300
-            py-5 text-xl font-black text-white
-            shadow-[0_0_30px_rgba(6,182,212,0.45),0_4px_20px_rgba(0,0,0,0.3)]
-            transition-all duration-200 active:scale-[0.97] hover:shadow-[0_0_40px_rgba(6,182,212,0.6)]
-          "
-        >
-          <Globe className="h-6 w-6" />
-          Online Multiplayer
+      {/* ── Online CTA ───────────────────────────────────────────────────── */}
+      <Link href="/online" className="relative z-10 w-full">
+        <div className="relative overflow-hidden rounded-[var(--r-lg)] bg-gradient-to-r from-sky-500 to-cyan-400 shadow-[0_0_28px_rgba(6,182,212,0.35)] hover:shadow-[0_0_40px_rgba(6,182,212,0.5)] transition-all duration-200 active:scale-[0.97]">
+          <div className="flex items-center justify-between px-5 py-3.5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-white/20">
+                <Globe className="h-[18px] w-[18px] text-white" />
+              </div>
+              <div>
+                <p className="text-[15px] font-extrabold text-white leading-none">Online Multiplayer</p>
+                <p className="text-[11px] font-semibold text-sky-100/70 mt-0.5">Mit Freunden spielen</p>
+              </div>
+            </div>
+            <ChevronRight className="h-[18px] w-[18px] text-white/70" />
+          </div>
         </div>
       </Link>
 
-      {/* Footer */}
-      <p className="relative z-10 mt-8 mb-2 text-center text-[18px] font-semibold text-zinc-400">
+      {/* ── Footer ───────────────────────────────────────────────────────── */}
+      <p className="relative z-10 mt-6 text-center text-[11px] font-semibold text-zinc-600">
         Nur für Personen ab 18 Jahren 🔞
       </p>
     </main>

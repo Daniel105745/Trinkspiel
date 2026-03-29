@@ -4,21 +4,22 @@ import "./globals.css";
 
 const nunito = Nunito({
   subsets: ["latin"],
-  weight: ["400", "700", "800", "900"],
+  weight: ["400", "600", "700", "800", "900"],
   variable: "--font-nunito",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Trinkspiel App",
-  description: "Party • Spaß • Chaos",
+  title: "🍺 Trinkspiel App – Party • Spaß • Chaos",
+  description:
+    "Die ultimative Trinkspiel-App für deine Party! Wahrheit oder Pflicht, Ich hab noch nie, Wer würde eher & Imposter.",
 };
 
-// viewport-fit=cover aktiviert safe-area-inset für iPhone Notch / Home Indicator
 export const viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: "#060710",
 };
 
 export default function RootLayout({
@@ -28,8 +29,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="de" className={nunito.variable}>
-      <body className="antialiased bg-black flex justify-center min-h-screen">
-        <div className="w-full max-w-[430px] min-h-screen relative shadow-[0_0_80px_rgba(0,0,0,0.9)]">
+      <body className="flex justify-center min-h-screen">
+        <div className="w-full max-w-[430px] min-h-screen relative">
           {children}
         </div>
       </body>

@@ -7,240 +7,151 @@ import GameLayout from "@/components/GameLayout";
 import { supabase, type IchHabNochNie } from "@/lib/supabase";
 import { ICH_HAB_NOCH_NIE_18_PLUS } from "@/lib/fragenData";
 
-// 18+ Karten aus fragenData.ts – mit negativen IDs, count-Felder bleiben 0 (nur lokal)
-const ICH_HAB_NOCH_NIE_18PLUS: IchHabNochNie[] = ICH_HAB_NOCH_NIE_18_PLUS.map((text, i) => ({
-  id: -(i + 1),
-  text: `...${text}`,
-  schon_getan_count: 0,
-  noch_nie_count: 0,
+const LOCAL_18: IchHabNochNie[] = ICH_HAB_NOCH_NIE_18_PLUS.map((text, i) => ({
+  id: -(i + 1), text: `...${text}`, schon_getan_count: 0, noch_nie_count: 0,
 }));
 
 export default function IchHabNochNie() {
-  const [supabaseCards, setSupabaseCards] = useState<IchHabNochNie[]>([]);
+  const [sbCards, setSbCards] = useState<IchHabNochNie[]>([]);
   const [cards, setCards] = useState<IchHabNochNie[]>([]);
-  const [index, setIndex] = useState(-1);
+  const [idx, setIdx] = useState(-1);
   const [loading, setLoading] = useState(true);
-  const [schonGetan, setSchonGetan] = useState(false);
-  const [trinkenFlash, setTrinkenFlash] = useState(false);
-  const [formOffen, setFormOffen] = useState(false);
-  const [eingabe, setEingabe] = useState("");
-  const [sendingForm, setSendingForm] = useState(false);
-  const [formErfolg, setFormErfolg] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+  const [flash, setFlash] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [inp, setInp] = useState("");
+  const [sending, setSending] = useState(false);
+  const [ok, setOk] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
   const [modus, setModus] = useState<"normal" | "18+">("normal");
 
   useEffect(() => {
     (async () => {
       try {
         const { data, error } = await supabase
-          .from("ich_hab_noch_nie")
-          .select("id, text, schon_getan_count, noch_nie_count");
-        if (!error) setSupabaseCards((data as IchHabNochNie[]) ?? []);
-      } catch (err) {
-        console.error("Supabase Fetch Fehler:", err);
-      } finally {
-        setLoading(false);
-      }
+          .from("ich_hab_noch_nie").select("id, text, schon_getan_count, noch_nie_count");
+        if (!error) setSbCards((data as IchHabNochNie[]) ?? []);
+      } catch { /* */ } finally { setLoading(false); }
     })();
   }, []);
 
   useEffect(() => {
-    let pool: IchHabNochNie[] = [...supabaseCards];
-    if (modus === "18+") {
-      pool = [...pool, ...ICH_HAB_NOCH_NIE_18PLUS];
-    }
-    if (pool.length > 0) {
-      setCards([...pool].sort(() => Math.random() - 0.5));
-      setIndex(0);
-      setSchonGetan(false);
-    }
-  }, [modus, supabaseCards]);
+    let pool = [...sbCards];
+    if (modus === "18+") pool = [...pool, ...LOCAL_18];
+    if (pool.length) { setCards([...pool].sort(() => Math.random() - 0.5)); setIdx(0); setDone(false); }
+  }, [modus, sbCards]);
 
-  function nächsteKarte() {
-    setIndex((i) => (i + 1) % Math.max(cards.length, 1));
-    setSchonGetan(false);
-  }
+  const next = () => { setIdx(i => (i + 1) % Math.max(cards.length, 1)); setDone(false); };
 
-  async function handleSchonGetan() {
-    if (schonGetan) return;
-    setSchonGetan(true);
-    setTrinkenFlash(true);
-    setTimeout(() => setTrinkenFlash(false), 300);
-    const card = cards[index];
-    if (card && card.id > 0) {
-      try {
-        await supabase
-          .from("ich_hab_noch_nie")
-          .update({ schon_getan_count: card.schon_getan_count + 1 })
-          .eq("id", card.id);
-      } catch {
-        // fire-and-forget: Fehler beim Zähler-Update still ignorieren
-      }
+  async function handleDone() {
+    if (done) return;
+    setDone(true); setFlash(true); setTimeout(() => setFlash(false), 350);
+    const c = cards[idx];
+    if (c && c.id > 0) {
+      try { await supabase.from("ich_hab_noch_nie").update({ schon_getan_count: c.schon_getan_count + 1 }).eq("id", c.id); } catch {}
     }
   }
 
-  async function einreichen() {
-    if (!eingabe.trim()) return;
-    setSendingForm(true);
-    setSubmitError(null);
-    const { error } = await supabase
-      .from("ich_hab_noch_nie")
-      .insert({ text: eingabe.trim(), schon_getan_count: 0, noch_nie_count: 0 });
-    if (!error) {
-      setFormErfolg(true);
-      setEingabe("");
-      setTimeout(() => setFormErfolg(false), 3000);
-    } else {
-      console.error("einreichen Fehler:", error);
-      setSubmitError("Einreichen fehlgeschlagen. Bitte nochmal versuchen.");
-    }
-    setSendingForm(false);
+  async function submit() {
+    if (!inp.trim()) return;
+    setSending(true); setErr(null);
+    const { error } = await supabase.from("ich_hab_noch_nie").insert({ text: inp.trim(), schon_getan_count: 0, noch_nie_count: 0 });
+    if (!error) { setOk(true); setInp(""); setTimeout(() => setOk(false), 3000); } else { setErr("Fehlgeschlagen. Nochmal versuchen."); }
+    setSending(false);
   }
 
-  const swipeHandlers = useSwipeable({
-    onSwipedLeft: nächsteKarte,
-    onSwipedRight: nächsteKarte,
-    preventScrollOnSwipe: true,
-  });
-
-  const card = index >= 0 ? cards[index] : null;
+  const sw = useSwipeable({ onSwipedLeft: next, onSwipedRight: next, preventScrollOnSwipe: true });
+  const card = idx >= 0 ? cards[idx] : null;
 
   return (
     <GameLayout
       title="Ich hab noch nie"
-      titleIcon={<span className="text-base">🙊</span>}
-      glowColor="rgba(14,165,233,0.10)"
-      counter={cards.length > 0 ? `${index + 1}/${cards.length}` : ""}
+      titleIcon={<span className="text-sm leading-none">🙊</span>}
+      glowColor="rgba(14,165,233,0.07)"
+      accentClass="accent-top-sky"
+      counter={cards.length > 0 ? `${idx + 1}/${cards.length}` : ""}
     >
-      <div className="flex flex-1 flex-col justify-between">
-        {/* Karte */}
-        <div className="flex flex-1 items-center justify-center py-4">
+      <div className="flex flex-1 flex-col justify-between gap-3">
+        {/* ── Card ──────────────────────────────────────────────────────── */}
+        <div className="flex flex-1 items-center justify-center py-1">
           {loading ? (
-            <p className="font-black text-zinc-400">Lade Karten...</p>
+            <div className="flex flex-col items-center gap-2">
+              <div className="h-14 w-14 rounded-2xl anim-shimmer bg-white/5" />
+              <p className="text-[13px] font-extrabold text-zinc-500">Karten werden geladen…</p>
+            </div>
           ) : !card ? (
-            <p className="font-black text-zinc-400">Keine Karten gefunden.</p>
+            <p className="text-[14px] font-extrabold text-zinc-500">Keine Karten gefunden.</p>
           ) : (
-            <div
-              key={index}
-              {...swipeHandlers}
-              style={{ touchAction: "pan-y" }}
-              className="
-                card-slide-right
-                relative w-full max-w-sm overflow-hidden rounded-3xl
-                border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl
-                shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)]
-                select-none
-              "
-            >
-              <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-sky-400 to-cyan-400" />
-              <div className="p-6 pb-8 pt-7">
-                <span className="inline-block rounded-xl bg-sky-900/60 px-3 py-1 text-[18px] font-black uppercase tracking-widest text-sky-300">
-                  Sozial
-                </span>
-                <div className="my-8 text-center text-6xl">🙊</div>
-                <p className="text-center text-[26px] font-black text-white leading-snug">
-                  Ich hab noch nie... {card.text}
+            <div key={idx} {...sw} style={{ touchAction: "pan-y" }}
+              className="anim-slide relative w-full overflow-hidden rounded-[var(--r-xl)] select-none glass-card">
+              <div className="accent-top-sky" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none" />
+
+              <div className="px-5 pt-5 pb-6">
+                <div className="flex items-center justify-between mb-5">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-500/12 border border-sky-500/15 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-widest text-sky-300">
+                    <span className="text-sm">🙊</span>Sozial
+                  </span>
+                  <span className="text-[11px] font-bold text-zinc-600 tabular-nums">{idx + 1}/{cards.length}</span>
+                </div>
+
+                <p className="text-center text-[13px] font-extrabold text-sky-400 uppercase tracking-wider mb-1.5">
+                  Ich hab noch nie…
                 </p>
-                {schonGetan && (
-                  <p className="mt-4 text-center text-[18px] font-bold text-amber-400">
-                    🍺 {card.schon_getan_count + 1} haben das schon getan!
-                  </p>
+                <p className="text-center text-[20px] font-extrabold text-white leading-snug min-h-[72px] flex items-center justify-center">
+                  {card.text}
+                </p>
+
+                {done && (
+                  <div className="mt-4 anim-fade rounded-[var(--r-md)] bg-amber-500/10 border border-amber-500/15 px-4 py-2.5 text-center">
+                    <p className="text-[13px] font-extrabold text-amber-400">🍺 {card.schon_getan_count + 1}× schon getan – trinken!</p>
+                  </div>
                 )}
-                <p className="mt-10 text-center text-[18px] font-semibold text-zinc-400">
-                  ← Swipe für nächste Karte →
-                </p>
+
+                <div className="swipe-hint"><div className="line" /><span className="label">Swipe für nächste</span><div className="line" /></div>
               </div>
             </div>
           )}
         </div>
 
-        <div className="flex flex-col gap-3 pb-2">
-          {/* 18+ Toggle */}
-          <button
-            onClick={() => setModus((m) => (m === "normal" ? "18+" : "normal"))}
-            className={`
-              flex w-full items-center justify-center gap-2
-              rounded-2xl py-[14px] text-[18px] font-black transition-all active:scale-[0.97]
-              ${modus === "18+"
-                ? "border border-red-500/40 bg-red-950/60 text-red-300"
-                : "border border-white/[0.10] bg-white/[0.04] text-zinc-400"
-              }
-            `}
-          >
-            🔞 {modus === "18+" ? "18+ Modus aktiv – Tap zum Deaktivieren" : "18+ Modus aktivieren"}
+        {/* ── Bottom Controls ───────────────────────────────────────────── */}
+        <div className="flex flex-col gap-2.5">
+          <button onClick={() => setModus(m => m === "normal" ? "18+" : "normal")}
+            className={`toggle-18 ${modus === "18+" ? "on" : "off"}`}>
+            🔞 {modus === "18+" ? "18+ aktiv – Deaktivieren" : "18+ Modus freischalten"}
           </button>
 
-          {/* Buttons */}
-          <div className="flex gap-3">
-            <button
-              onClick={handleSchonGetan}
-              disabled={schonGetan}
-              className={`
-                flex flex-1 items-center justify-center gap-2
-                rounded-2xl py-[14px] font-black text-lg text-amber-300
-                border border-amber-900/50
-                transition-all active:scale-[0.97] disabled:opacity-50
-                shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
-                ${trinkenFlash ? "bg-amber-800/80" : "bg-amber-950/80"}
-              `}
-            >
-              <Beer className="h-5 w-5" />
-              Schon getan
+          <div className="btn-row">
+            <button onClick={handleDone} disabled={done}
+              className={`btn-secondary !border-amber-900/35 disabled:opacity-40 ${flash ? "!bg-amber-700/50 !text-amber-200" : "!text-amber-300"}`}>
+              <Beer className="h-[18px] w-[18px]" />Schon getan
             </button>
-            <button
-              onClick={nächsteKarte}
-              className="
-                flex flex-1 items-center justify-center gap-2
-                rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400
-                py-[14px] text-lg font-black text-white
-                shadow-[0_0_20px_rgba(14,165,233,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]
-                transition-all active:scale-[0.97]
-              "
-            >
-              <SkipForward className="h-5 w-5" />
-              Nächste Karte
+            <button onClick={next}
+              className="btn-primary bg-gradient-to-r from-sky-500 to-cyan-400 shadow-[0_0_20px_rgba(14,165,233,0.35)]">
+              <SkipForward className="h-[18px] w-[18px]" />Nächste
             </button>
           </div>
 
-          {/* Einreichen Accordion */}
-          <div
-            className="
-              rounded-2xl border border-white/[0.10] bg-white/[0.05] backdrop-blur-xl overflow-hidden
-              shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
-            "
-          >
-            <button
-              onClick={() => setFormOffen(!formOffen)}
-              className="flex w-full items-center justify-between px-4 py-[14px] text-[18px] font-bold text-zinc-400 hover:text-zinc-200 active:text-zinc-200 transition-colors"
-            >
+          {/* submit accordion */}
+          <div className="overflow-hidden rounded-[var(--r-md)] border border-[var(--c-border)] bg-[var(--c-surface)]">
+            <button onClick={() => setFormOpen(!formOpen)}
+              className="flex w-full items-center justify-between px-4 py-3 text-[13px] font-extrabold text-zinc-500 hover:text-zinc-300 transition-colors">
               <span>Eigenen Satz einreichen</span>
-              {formOffen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              {formOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
             </button>
-            {formOffen && (
-              <div className="flex gap-2 border-t border-white/[0.06] p-3">
-                <input
-                  type="text"
-                  value={eingabe}
-                  onChange={(e) => setEingabe(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && einreichen()}
-                  placeholder="...in einem Flugzeug geweint."
-                  className="flex-1 rounded-xl bg-white/[0.08] px-4 py-3 text-[18px] text-white placeholder-zinc-500 outline-none focus:ring-2 focus:ring-sky-500"
-                />
-                <button
-                  onClick={einreichen}
-                  disabled={sendingForm || !eingabe.trim()}
-                  className="flex min-h-[52px] min-w-[52px] items-center justify-center rounded-xl bg-sky-500 transition-colors hover:bg-sky-400 active:scale-[0.97] disabled:opacity-50"
-                >
-                  <Send className="h-4 w-4 text-white" />
+            {formOpen && (
+              <div className="flex gap-2 border-t border-white/[0.05] p-2.5">
+                <input value={inp} onChange={e => setInp(e.target.value)} onKeyDown={e => e.key === "Enter" && submit()}
+                  placeholder="…in einem Flugzeug geweint."
+                  className="input flex-1 !py-2.5 !text-[13px]" />
+                <button onClick={submit} disabled={sending || !inp.trim()}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--r-sm)] bg-sky-500 active:scale-[0.93] disabled:opacity-40">
+                  <Send className="h-3.5 w-3.5 text-white" />
                 </button>
               </div>
             )}
-            {formErfolg && (
-              <p className="pb-3 text-center text-[18px] font-bold text-emerald-400">✓ Eingereicht!</p>
-            )}
-            {submitError && (
-              <p className="pb-3 text-center text-[18px] font-bold text-red-400">{submitError}</p>
-            )}
+            {ok && <p className="pb-2.5 text-center text-[12px] font-extrabold text-emerald-400">✓ Eingereicht!</p>}
+            {err && <p className="pb-2.5 text-center text-[12px] font-extrabold text-red-400">{err}</p>}
           </div>
         </div>
       </div>

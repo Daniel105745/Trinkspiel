@@ -23,156 +23,135 @@ export default function OnlineLobby() {
   const [mode, setMode] = useState<Mode>("idle");
   const [joinCode, setJoinCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [fehler, setFehler] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
 
-  function nameBestaetigen() {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    sessionStorage.setItem("trinkspiel_name", trimmed);
+  function nameOk() {
+    const t = name.trim();
+    if (!t) return;
+    sessionStorage.setItem("trinkspiel_name", t);
     setStep("action");
-    setFehler(null);
+    setErr(null);
   }
 
-  async function raumErstellen() {
-    setIsLoading(true);
-    setFehler(null);
+  async function create() {
+    setIsLoading(true); setErr(null);
     const code = generateCode();
     const hostId = crypto.randomUUID();
     const { error } = await supabase.from("rooms").insert({
       id: code, host_id: hostId,
       current_card_id: null, current_card_text: null, current_game: null, current_meta: {},
     });
-    if (error) { setFehler("Fehler beim Erstellen. Nochmal versuchen."); setIsLoading(false); return; }
+    if (error) { setErr("Fehler beim Erstellen."); setIsLoading(false); return; }
     localStorage.setItem(`trinkspiel_host_${code}`, hostId);
     router.push(`/online/${code}`);
   }
 
-  async function raumBeitreten() {
+  async function join() {
     const code = joinCode.trim().toUpperCase();
-    if (code.length !== 4) { setFehler("Bitte einen 4-stelligen Code eingeben."); return; }
-    setIsLoading(true); setFehler(null);
+    if (code.length !== 4) { setErr("Bitte 4-stelligen Code eingeben."); return; }
+    setIsLoading(true); setErr(null);
     const { data, error } = await supabase.from("rooms").select("id").eq("id", code).single();
-    if (error || !data) { setFehler(`Raum "${code}" nicht gefunden.`); setIsLoading(false); return; }
+    if (error || !data) { setErr(`Raum "${code}" nicht gefunden.`); setIsLoading(false); return; }
     router.push(`/online/${code}`);
   }
 
-  // ── Schritt 1: Name ──────────────────────────────────────────────────────
+  /* ═══ NAME ═══ */
   if (step === "name") {
     return (
-      <GameLayout
-        title="Online Multiplayer"
-        titleIcon={<Globe className="h-4 w-4 text-sky-400" />}
-        glowColor="rgba(14,165,233,0.10)"
-      >
-        <div className="flex flex-col items-center gap-6 pt-8">
+      <GameLayout title="Online Multiplayer" titleIcon={<Globe className="h-3.5 w-3.5 text-sky-400" />}
+        glowColor="rgba(14,165,233,0.08)" accentClass="accent-top-sky">
+        <div className="flex flex-col items-center gap-5 pt-6">
           <div className="relative">
-            <div className="absolute inset-0 scale-150 rounded-full bg-sky-500/20 blur-3xl" />
-            <div className="relative flex h-20 w-20 items-center justify-center rounded-[24px] bg-gradient-to-br from-sky-400 to-cyan-300 text-4xl shadow-xl">
-              👤
-            </div>
+            <div className="absolute inset-0 scale-150 rounded-full bg-sky-500/15 blur-3xl" />
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-[18px] bg-gradient-to-br from-sky-400 to-cyan-300 text-3xl shadow-lg">👤</div>
           </div>
           <div className="text-center">
-            <h2 className="text-2xl font-black text-white">Wie heißt du?</h2>
-            <p className="mt-1 text-[18px] font-semibold text-zinc-400">
-              Dein Name wird allen Mitspielern angezeigt
-            </p>
+            <h2 className="text-[22px] font-extrabold text-white">Wie heißt du?</h2>
+            <p className="mt-0.5 text-[13px] font-semibold text-zinc-500">Dein Name wird allen Mitspielern angezeigt</p>
           </div>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && nameBestaetigen()}
-            placeholder="Dein Name..."
-            maxLength={20}
-            autoFocus
-            className="w-full max-w-sm rounded-2xl border border-white/[0.08] bg-white/[0.05] px-5 py-4 text-center text-xl font-black text-white placeholder-zinc-600 outline-none focus:ring-2 focus:ring-sky-400"
-          />
-          <button
-            onClick={nameBestaetigen}
-            disabled={!name.trim()}
-            className="flex w-full max-w-sm items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-sky-400 to-cyan-300 py-5 text-xl font-black text-white shadow-lg shadow-sky-900/40 transition-all active:scale-[0.97] disabled:opacity-40"
-          >
-            Weiter <ArrowRight className="h-5 w-5" />
+          <input value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === "Enter" && nameOk()}
+            placeholder="Dein Name…" maxLength={20} autoFocus
+            className="input w-full max-w-sm text-center !text-[18px] !font-extrabold !py-3.5" />
+          <button onClick={nameOk} disabled={!name.trim()}
+            className="btn-primary w-full max-w-sm bg-gradient-to-r from-sky-500 to-cyan-400 shadow-[0_0_20px_rgba(14,165,233,0.35)] disabled:opacity-40 !py-[14px] !text-[16px]">
+            Weiter <ArrowRight className="h-[18px] w-[18px]" />
           </button>
         </div>
       </GameLayout>
     );
   }
 
-  // ── Schritt 2: Raum erstellen / beitreten ────────────────────────────────
+  /* ═══ ACTION ═══ */
   return (
-    <GameLayout
-      title="Online Multiplayer"
-      titleIcon={<Globe className="h-4 w-4 text-sky-400" />}
-      glowColor="rgba(14,165,233,0.10)"
-    >
-      <div className="flex flex-col gap-4">
-        {/* Name Badge */}
-        <div className="flex items-center justify-between rounded-2xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-900/60 text-[18px] font-black text-sky-300">
+    <GameLayout title="Online Multiplayer" titleIcon={<Globe className="h-3.5 w-3.5 text-sky-400" />}
+      glowColor="rgba(14,165,233,0.08)" accentClass="accent-top-sky">
+      <div className="flex flex-col gap-3">
+        {/* name badge */}
+        <div className="flex items-center justify-between rounded-[var(--r-md)] glass px-3.5 py-2.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-sky-900/50 text-[14px] font-extrabold text-sky-300">
               {name.trim()[0]?.toUpperCase()}
             </div>
-            <span className="text-[18px] font-black text-white">{name.trim()}</span>
+            <span className="text-[15px] font-extrabold text-white">{name.trim()}</span>
           </div>
-          <button onClick={() => setStep("name")} className="min-h-[52px] px-3 text-[18px] font-bold text-zinc-400 hover:text-zinc-200 active:text-zinc-200 transition-colors">
+          <button onClick={() => setStep("name")} className="px-2 py-2 text-[13px] font-bold text-zinc-500 hover:text-zinc-300 transition-colors">
             Ändern
           </button>
         </div>
 
-        {fehler && (
-          <div className="flex items-start gap-3 rounded-2xl border border-red-800 bg-red-950/50 p-4">
-            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
-            <p className="text-[18px] font-bold text-red-300">{fehler}</p>
+        {err && (
+          <div className="flex items-start gap-2.5 rounded-[var(--r-md)] border border-red-800/50 bg-red-950/35 p-3.5">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+            <p className="text-[13px] font-bold text-red-300">{err}</p>
           </div>
         )}
 
-        {/* Raum erstellen */}
-        <div className={`rounded-3xl border backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all ${mode === "create" ? "border-sky-700/60 bg-sky-950/30" : "border-white/[0.12] bg-white/[0.06]"}`}>
-          <button onClick={() => { setMode(mode === "create" ? "idle" : "create"); setFehler(null); }} className="flex w-full items-center gap-4 p-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-cyan-300">
-              <Plus className="h-6 w-6 text-white" />
+        {/* create */}
+        <div className={`rounded-[var(--r-xl)] border backdrop-blur-xl transition-all ${
+          mode === "create" ? "border-sky-700/50 bg-sky-950/25 shadow-[0_0_20px_rgba(14,165,233,0.1)]" : "border-[var(--c-border-hi)] bg-[var(--c-surface)]"}`}>
+          <button onClick={() => { setMode(mode === "create" ? "idle" : "create"); setErr(null); }}
+            className="flex w-full items-center gap-3.5 p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br from-sky-400 to-cyan-300">
+              <Plus className="h-[18px] w-[18px] text-white" />
             </div>
             <div className="text-left">
-              <p className="text-[18px] font-black text-white">Raum erstellen</p>
-              <p className="text-[18px] font-semibold text-zinc-400">Du bist der Host und wählst das Spiel</p>
+              <p className="text-[15px] font-extrabold text-white">Raum erstellen</p>
+              <p className="text-[12px] font-semibold text-zinc-500">Du bist Host und wählst das Spiel</p>
             </div>
           </button>
           {mode === "create" && (
-            <div className="border-t border-white/[0.06] p-5 pt-4">
-              <p className="mb-4 text-[18px] font-semibold text-zinc-400">Ein 4-stelliger Code wird generiert — teile ihn mit deinen Freunden.</p>
-              <button onClick={raumErstellen} disabled={isLoading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-400 to-cyan-300 py-4 text-lg font-black text-white shadow-[0_0_20px_rgba(14,165,233,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-[0.97] disabled:opacity-60">
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Globe className="h-5 w-5" />}
+            <div className="border-t border-white/[0.05] p-4 pt-3">
+              <p className="mb-3 text-[13px] font-semibold text-zinc-500">Ein 4-stelliger Code wird generiert — teile ihn mit deinen Freunden.</p>
+              <button onClick={create} disabled={isLoading}
+                className="btn-primary w-full bg-gradient-to-r from-sky-500 to-cyan-400 shadow-[0_0_20px_rgba(14,165,233,0.35)] disabled:opacity-50">
+                {isLoading ? <Loader2 className="h-[18px] w-[18px] animate-spin" /> : <Globe className="h-[18px] w-[18px]" />}
                 Raum erstellen
               </button>
             </div>
           )}
         </div>
 
-        {/* Raum beitreten */}
-        <div className={`rounded-3xl border backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all ${mode === "join" ? "border-white/[0.20] bg-white/[0.08]" : "border-white/[0.12] bg-white/[0.06]"}`}>
-          <button onClick={() => { setMode(mode === "join" ? "idle" : "join"); setFehler(null); }} className="flex w-full items-center gap-4 p-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.08]">
-              <LogIn className="h-6 w-6 text-zinc-300" />
+        {/* join */}
+        <div className={`rounded-[var(--r-xl)] border backdrop-blur-xl transition-all ${
+          mode === "join" ? "border-white/[0.18] bg-white/[0.07]" : "border-[var(--c-border-hi)] bg-[var(--c-surface)]"}`}>
+          <button onClick={() => { setMode(mode === "join" ? "idle" : "join"); setErr(null); }}
+            className="flex w-full items-center gap-3.5 p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border border-white/8 bg-white/[0.06]">
+              <LogIn className="h-[18px] w-[18px] text-zinc-300" />
             </div>
             <div className="text-left">
-              <p className="text-[18px] font-black text-white">Raum beitreten</p>
-              <p className="text-[18px] font-semibold text-zinc-400">Code vom Host eingeben</p>
+              <p className="text-[15px] font-extrabold text-white">Raum beitreten</p>
+              <p className="text-[12px] font-semibold text-zinc-500">Code vom Host eingeben</p>
             </div>
           </button>
           {mode === "join" && (
-            <div className="border-t border-white/[0.06] p-5 pt-4">
-              <input
-                type="text"
-                value={joinCode}
-                onChange={(e) => setJoinCode(e.target.value.toUpperCase().slice(0, 4))}
-                onKeyDown={(e) => e.key === "Enter" && raumBeitreten()}
-                placeholder="Z.B. A3K7"
-                maxLength={4}
-                className="mb-4 w-full rounded-2xl border border-white/[0.08] bg-white/[0.05] px-4 py-3 text-center text-2xl font-black uppercase tracking-widest text-white placeholder-zinc-600 outline-none focus:ring-2 focus:ring-white/30"
-              />
-              <button onClick={raumBeitreten} disabled={isLoading || joinCode.length !== 4} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-4 text-lg font-black text-zinc-950 transition-all active:scale-[0.97] disabled:opacity-40">
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogIn className="h-5 w-5" />}
+            <div className="border-t border-white/[0.05] p-4 pt-3">
+              <input value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase().slice(0, 4))}
+                onKeyDown={e => e.key === "Enter" && join()} placeholder="Z.B. A3K7" maxLength={4}
+                className="input mb-3 text-center !text-[22px] !font-extrabold uppercase tracking-[0.2em]" />
+              <button onClick={join} disabled={isLoading || joinCode.length !== 4}
+                className="btn-primary w-full bg-white !text-zinc-950 disabled:opacity-40">
+                {isLoading ? <Loader2 className="h-[18px] w-[18px] animate-spin" /> : <LogIn className="h-[18px] w-[18px]" />}
                 Beitreten
               </button>
             </div>
