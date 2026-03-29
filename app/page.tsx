@@ -1,87 +1,107 @@
 import Link from "next/link";
-import { Globe } from "lucide-react";
+import { Eye, Zap, Users2, Globe, UserX } from "lucide-react";
 
 const SPIELE = [
   {
     href: "/wahrheit-oder-pflicht",
     title: "Wahrheit oder Pflicht",
     subtitle: "Truth or Dare",
-    emoji: "🤔",
-    stripe: "from-violet-500 to-pink-500",
+    Icon: Eye,
+    iconGradient: "from-violet-500 to-purple-700",
+    cardGradient: "from-purple-900/50 to-purple-950/30",
+    border: "border-purple-500/20",
   },
   {
     href: "/ich-hab-noch-nie",
     title: "Ich hab noch nie",
     subtitle: "Never Have I Ever",
-    emoji: "⚡",
-    stripe: "from-sky-400 to-cyan-400",
+    Icon: Zap,
+    iconGradient: "from-sky-400 to-blue-600",
+    cardGradient: "from-slate-800/60 to-blue-950/40",
+    border: "border-sky-500/20",
   },
   {
     href: "/wer-wuerde-eher",
     title: "Am ehesten würde...",
     subtitle: "Most Likely To",
-    emoji: "🙋",
-    stripe: "from-emerald-400 to-green-500",
+    Icon: Users2,
+    iconGradient: "from-green-400 to-emerald-600",
+    cardGradient: "from-green-900/50 to-green-950/30",
+    border: "border-green-500/20",
   },
   {
     href: "/imposter",
     title: "Imposter",
     subtitle: "Wer ist der Verräter?",
-    emoji: "🕵️",
-    stripe: "from-red-500 to-orange-500",
+    Icon: UserX,
+    iconGradient: "from-red-500 to-orange-600",
+    cardGradient: "from-red-900/50 to-red-950/30",
+    border: "border-red-500/20",
   },
 ];
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-[#0d0f1e] flex flex-col items-center px-5 pb-10">
+      {/* Hintergrund-Glow */}
+      <div
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 20%, rgba(139,92,246,0.18) 0%, transparent 60%)",
+        }}
+      />
 
       {/* Hero */}
-      <div className="relative z-10 flex flex-col items-center gap-4 pt-10 pb-8">
-        <div className="flex h-20 w-20 items-center justify-center rounded-[24px] bg-white/[0.07] border border-white/[0.12] text-4xl shadow-lg">
-          🍺
+      <div className="relative z-10 flex flex-col items-center gap-4 pt-16 pb-10">
+        <div className="relative">
+          <div className="absolute inset-0 scale-[2.2] rounded-full bg-violet-600/30 blur-3xl" />
+          <div className="relative flex h-24 w-24 items-center justify-center rounded-[28px] bg-gradient-to-br from-violet-500 to-pink-500 text-5xl shadow-2xl shadow-violet-900/60">
+            🍺
+          </div>
         </div>
         <div className="text-center">
           <h1 className="text-5xl font-black text-white tracking-tight">
-            Trinkspiel
+            Trinkspiel App
           </h1>
-          <p className="mt-2 text-[18px] font-semibold text-zinc-400">
-            Party · Spaß · Chaos
+          <p className="mt-2 text-lg font-semibold text-zinc-400 tracking-wide">
+            Party • Spaß • Chaos
           </p>
         </div>
       </div>
 
       {/* Spielkarten – 2×2 Grid */}
       <div className="relative z-10 grid w-full max-w-sm grid-cols-2 gap-4">
-        {SPIELE.map(({ href, title, subtitle, emoji, stripe }) => (
+        {SPIELE.map(({ href, title, subtitle, Icon, iconGradient, cardGradient, border }) => (
           <Link
             key={href}
             href={href}
-            className="
-              group relative flex min-h-[160px] flex-col overflow-hidden rounded-3xl
-              border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl
-              shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.4)]
+            className={`
+              group flex min-h-[160px] flex-col rounded-3xl border p-4
+              bg-gradient-to-br ${cardGradient}
+              ${border}
+              backdrop-blur-xl
+              shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.3)]
               transition-all duration-200
-              active:scale-[0.97]
-            "
+              hover:bg-white/[0.08] active:scale-[0.97]
+            `}
           >
-            {/* Farbiger Top-Stripe */}
-            <div className={`absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r ${stripe}`} />
-
-            <div className="flex flex-1 flex-col p-4 pt-5">
-              <span className="mb-3 text-[32px] leading-none">{emoji}</span>
-              <p className="text-[20px] font-black text-white leading-tight">{title}</p>
-              <p className="mt-1 text-[18px] font-semibold text-zinc-400">{subtitle}</p>
+            <div
+              className={`mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${iconGradient} shadow-lg`}
+            >
+              <Icon className="h-6 w-6 text-white" />
             </div>
+            <p className="text-[18px] font-black text-white leading-tight">{title}</p>
+            <p className="mt-1 text-[18px] font-semibold text-zinc-400">{subtitle}</p>
           </Link>
         ))}
       </div>
 
       {/* ODER Divider */}
       <div className="relative z-10 my-7 flex w-full max-w-sm items-center gap-4">
-        <div className="h-px flex-1 bg-white/[0.08]" />
-        <span className="text-[18px] font-black tracking-[0.3em] text-zinc-500">ODER</span>
-        <div className="h-px flex-1 bg-white/[0.08]" />
+        <div className="h-px flex-1 bg-white/10" />
+        <span className="text-[18px] font-black tracking-[0.3em] text-zinc-400">ODER</span>
+        <div className="h-px flex-1 bg-white/10" />
       </div>
 
       {/* Online Multiplayer */}
@@ -89,9 +109,10 @@ export default function Home() {
         <div
           className="
             flex items-center justify-center gap-3 rounded-3xl
-            border border-white/[0.15] bg-white/[0.06]
+            bg-gradient-to-r from-sky-400 to-cyan-300
             py-5 text-xl font-black text-white
-            transition-all duration-200 active:scale-[0.97]
+            shadow-[0_0_30px_rgba(6,182,212,0.45),0_4px_20px_rgba(0,0,0,0.3)]
+            transition-all duration-200 active:scale-[0.97] hover:shadow-[0_0_40px_rgba(6,182,212,0.6)]
           "
         >
           <Globe className="h-6 w-6" />

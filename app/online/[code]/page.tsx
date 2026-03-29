@@ -45,12 +45,12 @@ const IMPOSTER_HILFSWÖRTER: Record<string, string> = {
   "Prosit": "Anstoßen", "Bierpong": "Becher",
 };
 
-const SPIELE: { id: GameId; label: string; desc: string; Icon: React.ElementType; emoji: string; stripe: string }[] = [
-  { id: "allgemein",             label: "Freie Runde",          desc: "Alle Karten gemischt",  Icon: Beer,   emoji: "🍺", stripe: "from-amber-400 to-orange-500" },
-  { id: "wahrheit-oder-pflicht", label: "Wahrheit oder Pflicht", desc: "Truth or Dare",        Icon: Eye,    emoji: "🤔", stripe: "from-violet-500 to-pink-500" },
-  { id: "ich-hab-noch-nie",      label: "Ich hab noch nie",     desc: "Never Have I Ever",     Icon: Zap,    emoji: "⚡", stripe: "from-sky-400 to-cyan-400" },
-  { id: "wer-wuerde-eher",       label: "Am ehesten würde...",  desc: "Most Likely To",        Icon: Users2, emoji: "🙋", stripe: "from-emerald-400 to-green-500" },
-  { id: "imposter",              label: "Imposter",             desc: "Wer ist der Verräter?", Icon: UserX,  emoji: "🕵️", stripe: "from-red-500 to-orange-500" },
+const SPIELE: { id: GameId; label: string; desc: string; Icon: React.ElementType; iconGradient: string; cardGradient: string; border: string }[] = [
+  { id: "allgemein",             label: "Freie Runde",          desc: "Alle Karten gemischt",         Icon: Beer,   iconGradient: "from-amber-400 to-orange-500",  cardGradient: "from-amber-900/40 to-orange-950/30",  border: "border-amber-500/20" },
+  { id: "wahrheit-oder-pflicht", label: "Wahrheit oder Pflicht", desc: "Truth or Dare",               Icon: Eye,    iconGradient: "from-violet-500 to-purple-700", cardGradient: "from-purple-900/50 to-purple-950/30", border: "border-purple-500/20" },
+  { id: "ich-hab-noch-nie",      label: "Ich hab noch nie",     desc: "Never Have I Ever",            Icon: Zap,    iconGradient: "from-sky-400 to-blue-600",     cardGradient: "from-sky-900/50 to-blue-950/30",      border: "border-sky-500/20" },
+  { id: "wer-wuerde-eher",       label: "Am ehesten würde...",  desc: "Most Likely To",               Icon: Users2, iconGradient: "from-green-400 to-emerald-600", cardGradient: "from-green-900/50 to-emerald-950/30", border: "border-green-500/20" },
+  { id: "imposter",              label: "Imposter",             desc: "Wer ist der Verräter?",        Icon: UserX,  iconGradient: "from-red-500 to-orange-600",    cardGradient: "from-red-900/50 to-red-950/30",       border: "border-red-500/20" },
 ];
 
 function getUserId() {
@@ -392,15 +392,16 @@ export default function RoomPage() {
           <div>
             <p className="mb-3 text-[18px] font-black uppercase tracking-widest text-zinc-400">Spiel auswählen</p>
             <div className="grid grid-cols-2 gap-3">
-              {SPIELE.map(({ id, label, desc, emoji, stripe }) => (
+              {SPIELE.map(({ id, label, desc, Icon, iconGradient, cardGradient, border }) => (
                 <button
                   key={id}
                   onClick={() => id === "imposter" ? setImposterPickerOpen(true) : spielWählen(id)}
-                  className="group relative flex min-h-[150px] flex-col overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl p-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.3)] transition-all duration-200 active:scale-[0.97]"
+                  className={`group flex min-h-[150px] flex-col rounded-3xl border p-4 text-left bg-gradient-to-br ${cardGradient} ${border} backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.3)] transition-all duration-200 active:scale-[0.97]`}
                 >
-                  <div className={`absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r ${stripe}`} />
-                  <span className="mb-3 mt-1 text-[32px] leading-none">{emoji}</span>
-                  <p className="text-[20px] font-black text-white leading-snug">{label}</p>
+                  <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${iconGradient} shadow-lg`}>
+                    <Icon className="h-6 w-6 text-white" />
+                  </div>
+                  <p className="text-[18px] font-black text-white leading-snug">{label}</p>
                   <p className="mt-1 text-[18px] font-semibold text-zinc-400">{desc}</p>
                 </button>
               ))}

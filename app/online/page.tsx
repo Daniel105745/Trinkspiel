@@ -65,8 +65,11 @@ export default function OnlineLobby() {
         glowColor="rgba(14,165,233,0.10)"
       >
         <div className="flex flex-col items-center gap-6 pt-8">
-          <div className="flex h-20 w-20 items-center justify-center rounded-[24px] bg-white/[0.07] border border-white/[0.12] text-4xl shadow-lg">
-            👤
+          <div className="relative">
+            <div className="absolute inset-0 scale-150 rounded-full bg-sky-500/20 blur-3xl" />
+            <div className="relative flex h-20 w-20 items-center justify-center rounded-[24px] bg-gradient-to-br from-sky-400 to-cyan-300 text-4xl shadow-xl">
+              👤
+            </div>
           </div>
           <div className="text-center">
             <h2 className="text-2xl font-black text-white">Wie heißt du?</h2>
