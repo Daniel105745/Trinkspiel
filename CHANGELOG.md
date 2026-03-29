@@ -2,6 +2,16 @@
 
 ---
 
+## [2026-03-30] – UI Refresh: Spielauswahl Online-Lobby einheitlich
+
+### Änderungen
+- **`app/online/[code]/page.tsx`:** Spielauswahl-Karten im Lobby auf neues Design umgestellt – neutrales Glassmorphism (`bg-white/[0.07] border-white/[0.18] backdrop-blur-xl`), farbiger 2px-Top-Stripe, große Emojis statt Gradient-Icon-Boxen; `SPIELE`-Array um `emoji` + `stripe` erweitert, alte Felder `iconGradient`/`cardGradient`/`border` entfernt
+
+### Angefasste Dateien
+- `app/online/[code]/page.tsx`
+
+---
+
 ## [2026-03-30] – UI Refresh: Glassmorphism konsistent (Fix)
 
 ### Fixes
