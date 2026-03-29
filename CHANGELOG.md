@@ -2,6 +2,18 @@
 
 ---
 
+## [2026-03-30] – UI Refresh: Glassmorphism konsistent (Fix)
+
+### Fixes
+- **`app/page.tsx`:** Glassmorphism auf Spielkarten wiederhergestellt – `backdrop-blur-xl`, `bg-white/[0.07]`, `border-white/[0.18]`, stärkere Inset-Shadow
+- **`app/online/page.tsx`:** Gradient-Icon-Box + Glow-Blob im Name-Step entfernt → neutrales Glassmorphism wie Home-Hero
+
+### Angefasste Dateien
+- `app/page.tsx`
+- `app/online/page.tsx`
+
+---
+
 ## [2026-03-30] – UI Refresh: Refined Minimal
 
 ### Startseite (`app/page.tsx`)

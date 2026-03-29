@@ -59,8 +59,8 @@ export default function Home() {
             href={href}
             className="
               group relative flex min-h-[160px] flex-col overflow-hidden rounded-3xl
-              border border-white/[0.10] bg-white/[0.05]
-              shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_4px_20px_rgba(0,0,0,0.3)]
+              border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl
+              shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.4)]
               transition-all duration-200
               active:scale-[0.97]
             "
