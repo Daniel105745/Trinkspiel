@@ -2,6 +2,23 @@
 
 ---
 
+## [2026-05-09] – Refined Dark Design System – Online-Raum
+
+### Design-System-Alignment `online/[code]/page.tsx`
+- **Glass-Klassen:** Inline-Styles (`bg-white/[0.07] border-white/[0.18] backdrop-blur-xl shadow-[...]`) durch `.glass` und `.glass-card` CSS-Klassen ersetzt
+- **Design-Tokens:** `rounded-3xl` / `rounded-2xl` durch `rounded-[var(--r-xl)]` / `rounded-[var(--r-md)]` / `rounded-[var(--r-sm)]` ersetzt
+- **Typografie:** `text-[18px] font-black` durchgehend auf `text-[13px]-[15px] font-extrabold` normalisiert (konsistent mit allen anderen Seiten)
+- **Button-Klassen:** Inline-Button-Styles durch `.btn-primary`, `.btn-secondary`, `.btn-row` ersetzt
+- **18+ Toggle:** Inline-Toggle durch `.toggle-18` Klasse ersetzt
+- **Section Labels:** `text-[18px] font-black uppercase tracking-widest` durch `.section-label` Klasse ersetzt
+- **Accent Stripes:** Inline-Gradient-Stripes durch `.accent-top-red` / `.accent-top-green` Klassen ersetzt
+- **Animationen:** `card-slide-right` / `player-pop` durch `.anim-slide` / `.anim-player` / `.anim-cd` Design-System-Animationen ersetzt
+- **Imposter-Picker Modal:** Auf Design-System-Klassen umgestellt (glass, btn-secondary, Tokens)
+- **Schatten-Tokens:** Hardcoded Box-Shadows durch `var(--sh-card)` / `var(--sh-glass)` ersetzt
+- **Karten-Overlay:** `bg-gradient-to-b from-white/[0.04]` Overlay auf regulärer Spielkarte hinzugefügt (konsistent mit Offline-Karten)
+
+---
+
 ## [2026-03-27] – Code & Design Fixes (Review-Durchlauf 3)
 
 ### Fehlerbehandlung

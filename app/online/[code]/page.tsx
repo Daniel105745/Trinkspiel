@@ -331,16 +331,16 @@ export default function RoomPage() {
   }
 
   if (pageLoading) return (
-    <GameLayout title="Online Multiplayer" titleIcon={<Globe className="h-4 w-4 text-sky-400" />} glowColor="rgba(14,165,233,0.10)">
+    <GameLayout title="Online Multiplayer" titleIcon={<Globe className="h-3.5 w-3.5 text-sky-400" />} glowColor="rgba(14,165,233,0.10)">
       <div className="flex flex-1 items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-zinc-600" /></div>
     </GameLayout>
   );
 
   if (fehler || !room) return (
-    <GameLayout title="Online Multiplayer" titleIcon={<Globe className="h-4 w-4 text-sky-400" />} glowColor="rgba(14,165,233,0.10)">
-      <div className="flex items-start gap-3 rounded-2xl border border-red-800 bg-red-950/50 p-5">
-        <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
-        <p className="text-[18px] font-bold text-red-300">{fehler}</p>
+    <GameLayout title="Online Multiplayer" titleIcon={<Globe className="h-3.5 w-3.5 text-sky-400" />} glowColor="rgba(14,165,233,0.10)">
+      <div className="flex items-start gap-2.5 rounded-[var(--r-md)] border border-red-800/50 bg-red-950/35 p-3.5">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+        <p className="text-[13px] font-bold text-red-300">{fehler}</p>
       </div>
     </GameLayout>
   );
@@ -348,21 +348,21 @@ export default function RoomPage() {
   const aktivesSpiel = SPIELE.find((s) => s.id === currentGame);
 
   const RoomHeader = (
-    <div className="mb-5 flex items-center justify-between">
+    <div className="mb-4 flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <div className="rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2">
-          <span className="text-xl font-black tracking-widest text-white">{upperCode}</span>
+        <div className="rounded-[var(--r-sm)] glass px-3.5 py-2">
+          <span className="text-[16px] font-extrabold tracking-widest text-white">{upperCode}</span>
         </div>
-        <button onClick={kopieren} className="flex min-h-[52px] min-w-[52px] items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] transition-colors active:bg-white/10">
+        <button onClick={kopieren} className="flex h-10 w-10 items-center justify-center rounded-[var(--r-sm)] glass transition-colors active:bg-white/10">
           {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4 text-zinc-400" />}
         </button>
       </div>
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5">
-          <Users className="h-4 w-4 text-zinc-400" /><span className="text-[18px] font-black text-zinc-300">{players.length}</span>
+        <div className="flex items-center gap-1.5 rounded-full glass px-3 py-1.5">
+          <Users className="h-3.5 w-3.5 text-zinc-400" /><span className="text-[14px] font-extrabold text-zinc-300">{players.length}</span>
         </div>
-        <button onClick={verlassen} className="flex min-h-[52px] min-w-[52px] items-center justify-center rounded-full border border-white/10 bg-white/[0.05] transition-colors hover:bg-red-950 hover:border-red-800 active:bg-red-950 active:border-red-800">
-          <LogOut className="h-5 w-5 text-zinc-400" />
+        <button onClick={verlassen} className="flex h-10 w-10 items-center justify-center rounded-full glass transition-colors hover:bg-red-950 hover:border-red-800 active:bg-red-950 active:border-red-800">
+          <LogOut className="h-4 w-4 text-zinc-400" />
         </button>
       </div>
     </div>
@@ -371,46 +371,46 @@ export default function RoomPage() {
   // ── Lobby ─────────────────────────────────────────────────────────────────
   if (!currentGame) return (
     <>
-    <GameLayout title="Lobby" titleIcon={<Globe className="h-4 w-4 text-sky-400" />} glowColor="rgba(14,165,233,0.10)">
-      <div className="flex flex-col gap-5">
+    <GameLayout title="Lobby" titleIcon={<Globe className="h-3.5 w-3.5 text-sky-400" />} glowColor="rgba(14,165,233,0.10)">
+      <div className="flex flex-col gap-4">
         {RoomHeader}
-        <div className="rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_4px_20px_rgba(0,0,0,0.3)] p-4">
-          <p className="mb-3 text-[18px] font-black uppercase tracking-widest text-zinc-400">Verbundene Spieler</p>
+        <div className="rounded-[var(--r-xl)] glass-card p-4">
+          <p className="section-label mb-3">Verbundene Spieler</p>
           <div className="flex flex-col gap-2">
             {players.length === 0 ? (
-              <p className="text-[18px] font-semibold text-zinc-400 py-2">Warte auf Spieler...</p>
+              <p className="text-[13px] font-semibold text-zinc-500 py-2">Warte auf Spieler...</p>
             ) : players.map((p, i) => (
-              <div key={i} className="flex items-center gap-3 rounded-2xl bg-white/[0.04] px-3 py-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-[18px] font-black text-white">{p.name[0]?.toUpperCase()}</div>
-                <span className="flex-1 truncate text-[20px] font-black text-white">{p.name}</span>
-                {p.isHost && <div className="flex items-center gap-1 rounded-full bg-amber-950/60 px-2 py-1"><Crown className="h-3.5 w-3.5 text-amber-400" /><span className="text-[18px] font-black text-amber-400">Host</span></div>}
+              <div key={i} className="flex items-center gap-2.5 rounded-[var(--r-md)] bg-white/[0.04] px-3 py-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-white/10 text-[14px] font-extrabold text-white">{p.name[0]?.toUpperCase()}</div>
+                <span className="flex-1 truncate text-[15px] font-extrabold text-white">{p.name}</span>
+                {p.isHost && <div className="flex items-center gap-1 rounded-full bg-amber-950/60 px-2 py-1"><Crown className="h-3 w-3 text-amber-400" /><span className="text-[11px] font-extrabold text-amber-400">Host</span></div>}
               </div>
             ))}
           </div>
         </div>
         {isHost ? (
           <div>
-            <p className="mb-3 text-[18px] font-black uppercase tracking-widest text-zinc-400">Spiel auswählen</p>
+            <p className="section-label mb-3">Spiel auswählen</p>
             <div className="grid grid-cols-2 gap-3">
               {SPIELE.map(({ id, label, desc, Icon, iconGradient, cardGradient, border }) => (
                 <button
                   key={id}
                   onClick={() => id === "imposter" ? setImposterPickerOpen(true) : spielWählen(id)}
-                  className={`group flex min-h-[150px] flex-col rounded-3xl border p-4 text-left bg-gradient-to-br ${cardGradient} ${border} backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.3)] transition-all duration-200 active:scale-[0.97]`}
+                  className={`group flex min-h-[130px] flex-col rounded-[var(--r-xl)] border p-4 text-left bg-gradient-to-br ${cardGradient} ${border} backdrop-blur-xl shadow-[var(--sh-card)] transition-all duration-200 active:scale-[0.97]`}
                 >
-                  <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${iconGradient} shadow-lg`}>
-                    <Icon className="h-6 w-6 text-white" />
+                  <div className={`mb-2.5 flex h-11 w-11 items-center justify-center rounded-[var(--r-md)] bg-gradient-to-br ${iconGradient} shadow-lg`}>
+                    <Icon className="h-5 w-5 text-white" />
                   </div>
-                  <p className="text-[18px] font-black text-white leading-snug">{label}</p>
-                  <p className="mt-1 text-[18px] font-semibold text-zinc-400">{desc}</p>
+                  <p className="text-[14px] font-extrabold text-white leading-snug">{label}</p>
+                  <p className="mt-0.5 text-[12px] font-semibold text-zinc-400">{desc}</p>
                 </button>
               ))}
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-2 rounded-3xl border border-dashed border-white/10 bg-white/[0.02] py-10">
-            <Crown className="h-8 w-8 text-zinc-400" />
-            <p className="font-black text-zinc-400">Warte auf den Host...</p>
+          <div className="flex flex-col items-center gap-2 rounded-[var(--r-xl)] border border-dashed border-white/10 bg-white/[0.02] py-10">
+            <Crown className="h-7 w-7 text-zinc-500" />
+            <p className="text-[13px] font-extrabold text-zinc-500">Warte auf den Host...</p>
           </div>
         )}
       </div>
@@ -419,35 +419,35 @@ export default function RoomPage() {
     {/* Imposter-Picker */}
     {imposterPickerOpen && (
       <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm">
-        <div className="w-full max-w-sm rounded-t-3xl border-t border-white/10 bg-zinc-950 p-6 pb-10">
+        <div className="w-full max-w-sm rounded-t-[var(--r-xl)] border-t border-white/10 bg-[#0a0c1a] p-5 pb-8">
           <div className="mb-1 flex justify-center">
             <div className="h-1 w-10 rounded-full bg-white/20" />
           </div>
-          <p className="mb-6 mt-4 text-center text-xl font-black text-white">Wie viele Imposter?</p>
-          <div className="flex flex-col gap-3">
+          <p className="mb-5 mt-3 text-center text-[18px] font-extrabold text-white">Wie viele Imposter?</p>
+          <div className="flex flex-col gap-2.5">
             <button
               onClick={() => { onlineImposterCountRef.current = 1; setImposterPickerOpen(false); spielWählen("imposter"); }}
-              className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.05] p-5 text-left transition-all active:scale-[0.97]"
+              className="flex items-center gap-3.5 rounded-[var(--r-md)] glass p-4 text-left transition-all active:scale-[0.97]"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/20 text-2xl">🕵️</div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-[var(--r-md)] bg-red-500/20 text-xl">🕵️</div>
               <div>
-                <p className="text-[18px] font-black text-white">1 Imposter</p>
-                <p className="text-[18px] text-zinc-400">Klassisch</p>
+                <p className="text-[15px] font-extrabold text-white">1 Imposter</p>
+                <p className="text-[12px] font-semibold text-zinc-500">Klassisch</p>
               </div>
             </button>
             <button
               onClick={() => { onlineImposterCountRef.current = 2; setImposterPickerOpen(false); spielWählen("imposter"); }}
-              className="flex items-center gap-4 rounded-2xl border border-red-500/30 bg-red-950/30 p-5 text-left transition-all active:scale-[0.97]"
+              className="flex items-center gap-3.5 rounded-[var(--r-md)] border border-red-500/30 bg-red-950/30 p-4 text-left transition-all active:scale-[0.97]"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/20 text-2xl">🕵️🕵️</div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-[var(--r-md)] bg-red-500/20 text-xl">🕵️🕵️</div>
               <div>
-                <p className="text-[18px] font-black text-white">2 Imposter</p>
-                <p className="text-[18px] text-zinc-400">Mehr Chaos</p>
+                <p className="text-[15px] font-extrabold text-white">2 Imposter</p>
+                <p className="text-[12px] font-semibold text-zinc-500">Mehr Chaos</p>
               </div>
             </button>
             <button
               onClick={() => setImposterPickerOpen(false)}
-              className="mt-1 rounded-2xl border border-white/10 bg-white/[0.05] py-[14px] text-[18px] font-black text-zinc-400 transition-all active:scale-[0.97]"
+              className="btn-secondary mt-1"
             >
               Abbrechen
             </button>
@@ -475,11 +475,11 @@ export default function RoomPage() {
   const twoImpostersOnline = currentMeta.imposterCount === "2";
 
   return (
-    <GameLayout title={aktivesSpiel?.label ?? "Spiel"} titleIcon={aktivesSpiel ? <aktivesSpiel.Icon className="h-4 w-4 text-zinc-300" /> : undefined} glowColor="rgba(124,58,237,0.10)">
+    <GameLayout title={aktivesSpiel?.label ?? "Spiel"} titleIcon={aktivesSpiel ? <aktivesSpiel.Icon className="h-3.5 w-3.5 text-zinc-300" /> : undefined} glowColor="rgba(124,58,237,0.10)">
       <div className="flex flex-1 flex-col justify-between">
         {RoomHeader}
         {isHost && (
-          <button onClick={zurückZurLobby} className="mb-4 flex items-center gap-1.5 self-start rounded-full border border-white/10 bg-white/[0.05] px-4 py-[14px] text-[18px] font-black text-zinc-400 transition-colors hover:bg-white/10 active:bg-white/10">
+          <button onClick={zurückZurLobby} className="mb-3 flex items-center gap-1.5 self-start rounded-full glass px-3.5 py-2 text-[13px] font-extrabold text-zinc-400 transition-colors hover:bg-white/10 active:bg-white/10">
             <ChevronLeft className="h-3.5 w-3.5" /> Spiel wechseln
           </button>
         )}
@@ -487,13 +487,13 @@ export default function RoomPage() {
         {currentMeta.selectedPlayer && currentGame !== "wer-wuerde-eher" && currentGame !== "ich-hab-noch-nie" && currentGame !== "imposter" && (
           <div
             key={currentMeta.selectedPlayer + currentCardText}
-            className="player-pop mb-4 flex flex-col items-center gap-1.5"
+            className="anim-player mb-4 flex flex-col items-center gap-1.5"
           >
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-[0_0_24px_rgba(251,191,36,0.45)] text-4xl font-black text-white">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-[0_0_20px_rgba(251,191,36,0.40)] text-3xl font-extrabold text-white">
               {currentMeta.selectedPlayer[0]?.toUpperCase()}
             </div>
-            <p className="text-[28px] font-black text-white">{currentMeta.selectedPlayer}</p>
-            <span className="rounded-full bg-amber-500/20 border border-amber-500/30 px-3 py-1 text-[18px] font-black uppercase tracking-widest text-amber-400">
+            <p className="text-[22px] font-extrabold text-white">{currentMeta.selectedPlayer}</p>
+            <span className="rounded-full bg-amber-500/20 border border-amber-500/30 px-3 py-1 text-[11px] font-extrabold uppercase tracking-widest text-amber-400">
               {currentMeta.isStart === "true" ? "🎲 fängt an!" : "🎯 ist dran!"}
             </span>
           </div>
@@ -504,60 +504,60 @@ export default function RoomPage() {
           {currentGame === "imposter" ? (
             <div className="w-full max-w-sm">
               {countdown !== null ? (
-                <div className="relative overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center">
-                  <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
-                  <p className="text-[18px] font-black uppercase tracking-widest text-zinc-400 mb-6">
+                <div className="relative overflow-hidden rounded-[var(--r-xl)] glass-card p-7 text-center">
+                  <div className="accent-top-red" />
+                  <p className="section-label mb-5">
                     Neue Runde startet in
                   </p>
-                  <div className="flex h-40 w-40 mx-auto items-center justify-center rounded-full border border-red-500/30 bg-red-950/40 mb-6">
-                    <span className="text-8xl font-black text-white">{countdown}</span>
+                  <div className="flex h-36 w-36 mx-auto items-center justify-center rounded-full border border-red-500/30 bg-red-950/40 mb-5 anim-cd">
+                    <span className="text-7xl font-extrabold text-white">{countdown}</span>
                   </div>
-                  <p className="text-[18px] font-black text-zinc-400">Macht euch bereit!</p>
+                  <p className="text-[13px] font-extrabold text-zinc-500">Macht euch bereit!</p>
                 </div>
               ) : !currentMeta.word ? (
-                <div className="relative overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center">
-                  <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
+                <div className="relative overflow-hidden rounded-[var(--r-xl)] glass-card p-7 text-center">
+                  <div className="accent-top-red" />
                   <div className="py-4">
                     {isHost
-                      ? <p className="font-black text-zinc-400">Starte die erste Runde!</p>
-                      : <p className="font-black text-zinc-400">Warte auf den Host...</p>}
+                      ? <p className="text-[14px] font-extrabold text-zinc-500">Starte die erste Runde!</p>
+                      : <p className="text-[14px] font-extrabold text-zinc-500">Warte auf den Host...</p>}
                   </div>
                 </div>
               ) : imposterRevealed ? (
-                <div className="relative overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center">
-                  <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
-                  <p className="text-[18px] font-black uppercase tracking-widest text-zinc-400 mb-2">Auflösung</p>
-                  <p className="text-[18px] font-bold text-zinc-400 mb-1">Das Wort war</p>
-                  <p className="text-4xl font-black text-white mb-4">{currentMeta.word}</p>
-                  <p className="text-[18px] font-bold text-zinc-400 mb-1">{twoImpostersOnline ? "Die Imposter waren" : "Der Imposter war"}</p>
-                  <p className="text-2xl font-black text-red-400">
+                <div className="relative overflow-hidden rounded-[var(--r-xl)] glass-card p-7 text-center">
+                  <div className="accent-top-red" />
+                  <p className="section-label mb-2">Auflösung</p>
+                  <p className="text-[13px] font-bold text-zinc-500 mb-1">Das Wort war</p>
+                  <p className="text-3xl font-extrabold text-white mb-4">{currentMeta.word}</p>
+                  <p className="text-[13px] font-bold text-zinc-500 mb-1">{twoImpostersOnline ? "Die Imposter waren" : "Der Imposter war"}</p>
+                  <p className="text-xl font-extrabold text-red-400">
                     {currentMeta.imposterName}{twoImpostersOnline && currentMeta.imposterName2 ? ` & ${currentMeta.imposterName2}` : ""} 🕵️
                   </p>
                 </div>
               ) : isImposter ? (
-                <div className="relative overflow-hidden rounded-3xl border border-red-500/50 bg-red-950/40 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center">
-                  <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500" />
-                  <div className="text-6xl mb-4">🕵️</div>
-                  <p className="text-2xl font-black text-red-400 mb-1">Du bist {twoImpostersOnline ? "ein" : "der"}</p>
-                  <p className="text-5xl font-black text-red-300">IMPOSTER!</p>
+                <div className="relative overflow-hidden rounded-[var(--r-xl)] border border-red-500/50 bg-red-950/40 backdrop-blur-xl shadow-[var(--sh-card)] p-7 text-center">
+                  <div className="accent-top-red" />
+                  <div className="text-5xl mb-3">🕵️</div>
+                  <p className="text-xl font-extrabold text-red-400 mb-1">Du bist {twoImpostersOnline ? "ein" : "der"}</p>
+                  <p className="text-4xl font-extrabold text-red-300">IMPOSTER!</p>
                   {currentMeta.hintWord && (
-                    <div className="mt-5 rounded-2xl border border-red-500/20 bg-red-500/10 px-5 py-3">
-                      <p className="text-[18px] font-black uppercase tracking-widest text-red-400 mb-1">
+                    <div className="mt-4 rounded-[var(--r-md)] border border-red-500/20 bg-red-500/10 px-4 py-3">
+                      <p className="section-label !text-red-400 mb-1">
                         Dein Hilfswort
                       </p>
-                      <p className="text-2xl font-black text-red-200">{currentMeta.hintWord}</p>
+                      <p className="text-xl font-extrabold text-red-200">{currentMeta.hintWord}</p>
                     </div>
                   )}
-                  <p className="mt-4 text-[18px] font-bold text-red-400">
+                  <p className="mt-3 text-[13px] font-bold text-red-400/70">
                     Nutze dein Hilfswort – aber nenn das echte Wort nicht!
                   </p>
                 </div>
               ) : (
-                <div className="relative overflow-hidden rounded-3xl border border-emerald-500/50 bg-emerald-950/30 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)] p-8 text-center">
-                  <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-emerald-500 to-green-400" />
-                  <p className="text-[18px] font-black uppercase tracking-widest text-zinc-400 mb-3">Das Wort ist</p>
-                  <p className="text-5xl font-black text-white mb-4">{currentMeta.word}</p>
-                  <p className="text-[18px] font-bold text-emerald-400">
+                <div className="relative overflow-hidden rounded-[var(--r-xl)] border border-emerald-500/50 bg-emerald-950/30 backdrop-blur-xl shadow-[var(--sh-card)] p-7 text-center">
+                  <div className="accent-top-green" />
+                  <p className="section-label mb-3">Das Wort ist</p>
+                  <p className="text-4xl font-extrabold text-white mb-3">{currentMeta.word}</p>
+                  <p className="text-[13px] font-bold text-emerald-400">
                     Finde den Imposter! Nenn das Wort nicht direkt.
                   </p>
                 </div>
@@ -566,54 +566,48 @@ export default function RoomPage() {
           ) : (
             <div
               key={currentCardText ?? "empty"}
-              className="card-slide-right relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/[0.18] bg-white/[0.07] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_40px_rgba(0,0,0,0.5)]"
+              className="anim-slide relative w-full max-w-sm overflow-hidden rounded-[var(--r-xl)] glass-card"
             >
               <div className={`absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r ${cardGradient}`} />
-              <div className="p-6 pb-8 pt-7">
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none" />
+              <div className="px-5 pt-5 pb-6">
                 {/* Wer würde eher: VS-Anzeige oben in der Karte */}
                 {currentGame === "wer-wuerde-eher" && currentMeta.player1 && (
-                  <div className="mb-5 text-center">
-                    <p className="text-[28px] font-black text-white leading-tight">
+                  <div className="mb-4 text-center">
+                    <p className="text-[22px] font-extrabold text-white leading-tight">
                       {currentMeta.player1}{" "}
-                      <span className="text-[20px] text-zinc-400">vs</span>{" "}
+                      <span className="text-[15px] text-zinc-500">vs</span>{" "}
                       {currentMeta.player2}
                     </p>
                   </div>
                 )}
 
                 {currentGame === "wahrheit-oder-pflicht" && currentMeta.typ && (
-                  <span className={`mb-4 inline-block rounded-xl px-3 py-1 text-[18px] font-black uppercase tracking-widest ${currentMeta.typ === "wahrheit" ? "bg-violet-800/60 text-violet-200" : "bg-pink-900/60 text-pink-200"}`}>
-                    {currentMeta.typ}
+                  <span className={`mb-4 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-widest border ${currentMeta.typ === "wahrheit" ? "bg-violet-500/12 text-violet-300 border-violet-500/15" : "bg-pink-500/12 text-pink-300 border-pink-500/15"}`}>
+                    {currentMeta.typ === "wahrheit" ? "🤔" : "🔥"} {currentMeta.typ}
                   </span>
                 )}
                 {currentCardText ? (
-                  <p className="mt-4 text-center text-[26px] font-black text-white leading-snug">{currentCardText}</p>
+                  <p className="mt-3 text-center text-[20px] font-extrabold text-white leading-snug min-h-[72px] flex items-center justify-center">{currentCardText}</p>
                 ) : (
-                  <div className="py-10 text-center">
-                    <div className="mb-3 text-4xl">{aktivesSpiel?.id === "ich-hab-noch-nie" ? "🙊" : aktivesSpiel?.id === "wahrheit-oder-pflicht" ? "🔥" : aktivesSpiel?.id === "wer-wuerde-eher" ? "🤷" : "🎲"}</div>
+                  <div className="py-8 text-center">
+                    <div className="mb-3 text-3xl">{aktivesSpiel?.id === "ich-hab-noch-nie" ? "🙊" : aktivesSpiel?.id === "wahrheit-oder-pflicht" ? "🔥" : aktivesSpiel?.id === "wer-wuerde-eher" ? "🤷" : "🎲"}</div>
                     {isHost
-                      ? <p className="text-[18px] font-black text-zinc-400">Zieh die erste Karte!</p>
-                      : <p className="text-[18px] font-black text-zinc-400">Warte auf den Host...</p>}
+                      ? <p className="text-[14px] font-extrabold text-zinc-500">Zieh die erste Karte!</p>
+                      : <p className="text-[14px] font-extrabold text-zinc-500">Warte auf den Host...</p>}
                   </div>
                 )}
               </div>
             </div>
           )}
         </div>
-        <div className="flex flex-col gap-3 pb-2">
+        <div className="flex flex-col gap-2.5 pb-2">
           {/* 18+ Toggle – Host steuert, alle sehen Status */}
           {currentGame !== "imposter" && (
             <button
               onClick={isHost ? toggle18Plus : undefined}
               disabled={!isHost}
-              className={`
-                flex w-full items-center justify-center gap-2 rounded-2xl py-[14px] text-[18px] font-black transition-all
-                ${currentMeta.mode18Plus === "true"
-                  ? "border border-red-500/40 bg-red-950/60 text-red-300"
-                  : "border border-white/[0.10] bg-white/[0.04] text-zinc-400"
-                }
-                ${isHost ? "active:scale-[0.97]" : "cursor-default"}
-              `}
+              className={`toggle-18 ${currentMeta.mode18Plus === "true" ? "on" : "off"} ${!isHost ? "cursor-default" : ""}`}
             >
               🔞 {currentMeta.mode18Plus === "true"
                 ? `18+ Modus aktiv${!isHost ? "" : " – Tap zum Deaktivieren"}`
@@ -623,43 +617,43 @@ export default function RoomPage() {
 
           {isHost ? (
             currentGame === "imposter" ? (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2.5">
                 {currentMeta.word && !imposterRevealed && (
                   <button
                     onClick={imposterAuflösung}
                     disabled={isLoading}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-500/40 bg-red-950/40 py-4 text-[18px] font-black text-red-300 transition-all active:scale-[0.97] disabled:opacity-60"
+                    className="btn-secondary !border-red-500/30 !text-red-300 disabled:opacity-60"
                   >
-                    <UserX className="h-5 w-5" /> Auflösung anzeigen
+                    <UserX className="h-[18px] w-[18px]" /> Auflösung anzeigen
                   </button>
                 )}
                 <button
                   onClick={() => karteZiehen()}
                   disabled={isLoading}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-red-500 to-orange-500 py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(239,68,68,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-[0.97] disabled:opacity-70"
+                  className="btn-primary bg-gradient-to-r from-red-500 to-orange-500 shadow-[0_0_20px_rgba(239,68,68,0.35)] disabled:opacity-70"
                 >
-                  <SkipForward className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} />
+                  <SkipForward className={`h-[18px] w-[18px] ${isLoading ? "animate-spin" : ""}`} />
                   {currentMeta.word ? "Neue Runde" : "Runde starten"}
                 </button>
               </div>
             ) : currentGame === "wahrheit-oder-pflicht" ? (
-              <div className="flex gap-3">
-                <button onClick={() => karteZiehen("wahrheit")} disabled={isLoading} className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-violet-500 py-4 text-[18px] font-black text-white shadow-[0_0_16px_rgba(139,92,246,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-[0.97] disabled:opacity-60">
-                  <HelpCircle className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} /> Wahrheit
+              <div className="btn-row">
+                <button onClick={() => karteZiehen("wahrheit")} disabled={isLoading} className="btn-primary bg-gradient-to-r from-violet-600 to-violet-500 shadow-[0_0_16px_rgba(139,92,246,0.35)] disabled:opacity-60">
+                  <HelpCircle className={`h-[18px] w-[18px] ${isLoading ? "animate-spin" : ""}`} /> Wahrheit
                 </button>
-                <button onClick={() => karteZiehen("pflicht")} disabled={isLoading} className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-pink-600 to-pink-500 py-4 text-[18px] font-black text-white shadow-[0_0_16px_rgba(236,72,153,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-[0.97] disabled:opacity-60">
-                  <Flame className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} /> Pflicht
+                <button onClick={() => karteZiehen("pflicht")} disabled={isLoading} className="btn-primary bg-gradient-to-r from-pink-600 to-pink-500 shadow-[0_0_16px_rgba(236,72,153,0.35)] disabled:opacity-60">
+                  <Flame className={`h-[18px] w-[18px] ${isLoading ? "animate-spin" : ""}`} /> Pflicht
                 </button>
               </div>
             ) : (
-              <button onClick={() => karteZiehen()} disabled={isLoading} className={`flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${cardGradient} py-5 text-xl font-black text-white shadow-[0_0_20px_rgba(99,102,241,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all active:scale-[0.97] disabled:opacity-70`}>
-                <SkipForward className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} />
+              <button onClick={() => karteZiehen()} disabled={isLoading} className={`btn-primary bg-gradient-to-r ${cardGradient} shadow-[0_0_20px_rgba(99,102,241,0.35)] disabled:opacity-70`}>
+                <SkipForward className={`h-[18px] w-[18px] ${isLoading ? "animate-spin" : ""}`} />
                 {currentCardText ? "Nächste Karte" : "Erste Karte ziehen"}
               </button>
             )
           ) : (
-            <div className="flex w-full items-center justify-center rounded-2xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] py-[14px]">
-              <p className="text-[18px] font-black text-zinc-400">
+            <div className="btn-secondary !cursor-default">
+              <p className="text-[13px] font-extrabold text-zinc-500">
                 {currentGame === "imposter" ? "Schau auf dein Display – nur für dich!" : "Der Host zieht die Karten"}
               </p>
             </div>
